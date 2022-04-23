@@ -72,9 +72,10 @@ fi
 
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
+# helm search repo grafana/ # to list all version available
 
 install_chart "${CURRENT_CLUSTER_NAME}" "minio" "minio"
-# install_chart "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
+install_chart "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
 # install_chart "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
 # install_chart "${CURRENT_CLUSTER_NAME}" "linkerd" "linkerd"
 # install_chart "${CURRENT_CLUSTER_NAME}" "linkerd-viz" "linkerd-viz"
