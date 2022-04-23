@@ -76,7 +76,7 @@ helm repo update
 
 install_chart "${CURRENT_CLUSTER_NAME}" "minio" "minio"
 install_chart "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
-# install_chart "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
+install_chart "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
 # install_chart "${CURRENT_CLUSTER_NAME}" "linkerd" "linkerd"
 # install_chart "${CURRENT_CLUSTER_NAME}" "linkerd-viz" "linkerd-viz"
 # install_chart "${CURRENT_CLUSTER_NAME}" "linkerd-jaeger" "linkerd-jaeger"
