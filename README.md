@@ -26,5 +26,8 @@ Require: `kubectl`, `helm` v3
 
 ```sh
 # after launch of your local (or remote) cluster, configure kubectl to access it as current context
-infra/install.sh
+infra/setup.sh install
+# use `infra/setup.sh uninstall` to uninstall stuff ;-)
+```
+
 ```

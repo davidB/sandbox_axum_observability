@@ -3,6 +3,7 @@
 set -euo pipefail
 # set -x
 DIR="$(cd "$(dirname "$0")" && pwd)"
+SUB_CMD="${1:-install}"
 
 function install_raw() {
   local CLUSTER_NAME=$1
@@ -70,13 +71,16 @@ if [ "$CURRENT_CLUSTER_NAME" = "rancher-desktop" ]; then
   CURRENT_CLUSTER_NAME="local"
 fi
 
+if [ "$SUB_CMD" != "uninstall" ]; then
+  SUB_CMD="install"
+fi
+
 helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
 # helm search repo grafana/ # to list all version available
 
-install_chart "${CURRENT_CLUSTER_NAME}" "minio" "minio"
-install_chart "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
-install_chart "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
-# install_chart "${CURRENT_CLUSTER_NAME}" "linkerd" "linkerd"
-# install_chart "${CURRENT_CLUSTER_NAME}" "linkerd-viz" "linkerd-viz"
-# install_chart "${CURRENT_CLUSTER_NAME}" "linkerd-jaeger" "linkerd-jaeger"
+"${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio" "minio"
+"${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
+"${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
+# "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "linkerd" "linkerd"
+# "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "linkerd-viz" "linkerd-viz"
+# "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "linkerd-jaeger" "linkerd-jaeger"
