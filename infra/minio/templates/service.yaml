@@ -4,11 +4,14 @@ metadata:
   labels:
     name: minio
   name: minio
-  namespace: default
 spec:
   ports:
-  - port: 9000
+  - name: service
+    port: 9000
     targetPort: 9000
+  - name: console
+    port: 9001
+    targetPort: 9001
   selector:
     app: minio
     name: minio

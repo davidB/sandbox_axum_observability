@@ -30,4 +30,12 @@ infra/setup.sh install
 # use `infra/setup.sh uninstall` to uninstall stuff ;-)
 ```
 
+Use port forward to access UI and service
+
+```sh
+# access grafana UI on http://127.0.0.1:8040
+kubectl port-forward -n grafana service/grafana 8040:service
+
+# access minio UI on http://127.0.0.1:8041
+kubectl port-forward -n minio service/minio 8041:console
 ```
