@@ -1,0 +1,40 @@
+[package]
+name = "example-opentelemetry"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+axum = "0.5"
+#axum-extra = { path = "../../axum-extra", features = ["opentelemetry"] }
+opentelemetry = { version = "0.17", features = ["rt-tokio"] }
+opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
+tokio = { version = "1.17", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.2", features = ["trace", "cors"] }
+tracing = "0.1"
+tracing-opentelemetry = "0.17"
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+  "env-filter",
+  "fmt",
+  "json",
+] }
+uuid = { version = "1.0", features = ["v4"] }
+
+clap = { version = "3.1", features = ["derive", "env"] }
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+
+[dev-dependencies]
+assert2 = "0.3.6"
+mime = "0.3"
+assert-json-diff = "2.0.1"
+hyper = { version = "0.14", features = ["full"] }
+
+[features]
+default = ["opentelemetry"]
+opentelemetry = []
+
+[profile.release]
+codegen-units = 1
+lto = true
