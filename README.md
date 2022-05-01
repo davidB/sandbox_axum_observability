@@ -17,15 +17,15 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
 - [ ] Use axum, async api,...
 - [ ] Delegate collect of metrics, logs,... to the infra as much as possible (eg http status, rps, ...)
 - [ ] Try to be a cloud native app, follow 12 factor app recommendation via:
-  - [ ] Configuration dependent of the platform / stack overwritable via Environment variable (use clap)
-  - [ ] Health-check via a `GET /health` endpoint
-  - [ ] Log printed on std output, in json format
+  - [x] Configuration dependent of the platform / stack override via Environment variable (use clap)
+  - [x] Health-check via a `GET /health` endpoint
+  - [x] Log printed on std output, in json format
   - [ ] Log include trace_id to easily link response, log and trace
-- [ ] To simulate a multi-level microservice architecture, the service can call `APP_OTHER_URL` (to define as it-self in the infra)
-- [ ] Provide a endpoint `GET /` that wait a `duration` then call endpoint defined by `APP_OTHER_URL` with the query parameter `depth` equals to current `depth - 1`
+- [ ] To simulate a multi-level microservice architecture, the service can call `APP_REMOTE_URL` (to define as it-self in the infra)
+- [ ] Provide a endpoint `GET /` that wait a `duration` then call endpoint defined by `APP_REMOTE_URL` with the query parameter `depth` equals to current `depth - 1`
   - [ ] `depth`: value between 0 and 10, if undefined a random value will be used.
-  - [ ] `duration`: duration in seconds, if undefined a random between 0.0 and 2.0
-  - [ ] the response of `APP_OTHER_URL` is returned as response
+  - [x] `duration_level_max`: duration in seconds, if undefined a random between 0.0 and 2.0
+  - [ ] the response of `APP_REMOTE_URL` is returned as response
   - [ ] if `depth` is 0, then it returns the `{ "ok_trace_id": "...."}`
   - [ ] if failure, then it returns the `{ "err_trace_id": "...."}`
 - [ ] To simulate error

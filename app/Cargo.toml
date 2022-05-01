@@ -7,8 +7,12 @@ publish = false
 [dependencies]
 axum = "0.5"
 #axum-extra = { path = "../../axum-extra", features = ["opentelemetry"] }
-opentelemetry = { version = "0.17", features = ["rt-tokio"] }
+http = "0.2"
+opentelemetry-lib = { package = "opentelemetry", version = "0.17", features = [
+  "rt-tokio",
+] }
 opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
+rand = "0.8"
 tokio = { version = "1.17", features = ["full"] }
 tower = "0.4"
 tower-http = { version = "0.2", features = ["trace", "cors"] }

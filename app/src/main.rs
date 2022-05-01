@@ -1,10 +1,15 @@
 mod middleware;
 
+use axum::extract::Query;
 use axum::http::Method;
-use axum::{response::IntoResponse, routing::get, routing::post, Router};
+use axum::{response::IntoResponse, routing::get, Router};
 use clap::Parser;
+use opentelemetry_lib as opentelemetry;
+use rand::prelude::*;
+use serde::Deserialize;
 use serde_json::json;
 use std::net::SocketAddr;
+use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 // use tracing::warn;
@@ -79,6 +84,7 @@ fn app() -> Router {
     // build our application with a route
     Router::new()
         .route("/health", get(health))
+        .route("/", get(simulation))
         .layer(
             // see https://docs.rs/tower-http/latest/tower_http/cors/index.html
             // for more details
@@ -99,12 +105,25 @@ async fn health() -> impl IntoResponse {
     axum::Json(json!({ "status" : "UP" }))
 }
 
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+struct SimulationParams {
+    duration_level_max: Option<f32>,
+}
+
+async fn simulation(params: Query<SimulationParams>) -> impl IntoResponse {
+    let mut rng: StdRng = SeedableRng::from_entropy();
+    let duration_level_max = params.duration_level_max.unwrap_or(2.0_f32);
+    let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
+    tokio::time::sleep(duration).await;
+    axum::Json(json!({ "simulation" :  "DONE"}))
+}
+
 #[cfg(test)]
 mod tests {
     // see https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
     use super::*;
     use assert2::{assert, check};
-    use assert_json_diff::assert_json_include;
     use axum::{
         body::Body,
         http::{Request, StatusCode},
@@ -150,5 +169,26 @@ mod tests {
         assert!(response.status() == StatusCode::NOT_FOUND);
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         assert!(body.is_empty());
+    }
+
+    #[tokio::test]
+    async fn simulation_with_duration() {
+        let app = app();
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/?duration_level_max=0.01")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        check!(response.status() == StatusCode::OK);
+
+        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
+        let body: Value = serde_json::from_slice(&body).unwrap();
+        check!(body == json!({ "simulation": "DONE" }));
     }
 }
