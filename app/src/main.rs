@@ -2,6 +2,7 @@ mod middleware;
 
 use axum::extract::Query;
 use axum::http::Method;
+use axum::Extension;
 use axum::{response::IntoResponse, routing::get, Router};
 use clap::Parser;
 use opentelemetry_lib as opentelemetry;
@@ -9,6 +10,7 @@ use rand::prelude::*;
 use serde::Deserialize;
 use serde_json::json;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
@@ -28,6 +30,8 @@ pub struct Settings {
     /// Minimal log level (same syntax than RUST_LOG)
     #[clap(long, env("APP_LOG_LEVEL"), default_value("info"))]
     pub log_level: String,
+    #[clap(long, env("APP_REMOTE_URL"))]
+    pub remote_url: Option<String>,
 }
 
 fn init_tracing(log_level: String) {
@@ -69,7 +73,10 @@ fn init_tracing(log_level: String) {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = Settings::parse();
     init_tracing(settings.log_level);
-    let app = app();
+    let remote_url = settings
+        .remote_url
+        .unwrap_or_else(|| format!("http://{}:{}/", settings.host, settings.port));
+    let app = app(&remote_url);
     // run it
     let addr = format!("{}:{}", settings.host, settings.port).parse::<SocketAddr>()?;
     tracing::warn!("listening on {}", addr);
@@ -80,11 +87,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn app() -> Router {
+fn app(remote_url: &str) -> Router {
+    let simulation_settings = SimulationSettings {
+        remote_url: remote_url.to_string(),
+    };
     // build our application with a route
     Router::new()
         .route("/health", get(health))
         .route("/", get(simulation))
+        .layer(Extension(simulation_settings))
         .layer(
             // see https://docs.rs/tower-http/latest/tower_http/cors/index.html
             // for more details
@@ -105,18 +116,53 @@ async fn health() -> impl IntoResponse {
     axum::Json(json!({ "status" : "UP" }))
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 struct SimulationParams {
     duration_level_max: Option<f32>,
+    depth: Option<u8>,
 }
 
-async fn simulation(params: Query<SimulationParams>) -> impl IntoResponse {
+#[derive(Debug, Clone)]
+struct SimulationSettings {
+    remote_url: String,
+}
+
+//TODO handle error
+async fn simulation(
+    params: Option<Query<SimulationParams>>,
+    settings: Extension<SimulationSettings>,
+) -> impl IntoResponse {
     let mut rng: StdRng = SeedableRng::from_entropy();
-    let duration_level_max = params.duration_level_max.unwrap_or(2.0_f32);
+    let duration_level_max = params
+        .clone()
+        .and_then(|o| o.duration_level_max)
+        .unwrap_or(2.0_f32);
     let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
     tokio::time::sleep(duration).await;
-    axum::Json(json!({ "simulation" :  "DONE"}))
+
+    let depth = params
+        .and_then(|o| o.depth)
+        .unwrap_or_else(|| rng.gen_range(0..=10))
+        .min(10);
+    let resp_body = if depth > 0 {
+        let url = format!(
+            "{}?duration={}&depth={}",
+            settings.remote_url,
+            duration_level_max,
+            depth - 1
+        );
+        let resp = reqwest::get(url)
+            .await
+            .expect("response for get")
+            .json::<serde_json::Value>()
+            .await
+            .expect("json response for get");
+        json!({ "depth": depth, "response": resp })
+    } else {
+        json!({ "simulation" :  "DONE"})
+    };
+    axum::Json(resp_body)
 }
 
 #[cfg(test)]
@@ -129,11 +175,12 @@ mod tests {
         http::{Request, StatusCode},
     };
     use serde_json::{json, Value};
+    use std::net::{SocketAddr, TcpListener};
     use tower::ServiceExt; // for `app.oneshot()`
 
     #[tokio::test]
     async fn health() {
-        let app = app();
+        let app = app("");
 
         let response = app
             .oneshot(
@@ -154,7 +201,7 @@ mod tests {
 
     #[tokio::test]
     async fn not_found() {
-        let app = app();
+        let app = app("");
 
         let response = app
             .oneshot(
@@ -173,12 +220,23 @@ mod tests {
 
     #[tokio::test]
     async fn simulation_with_duration() {
-        let app = app();
+        let listener = TcpListener::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).unwrap();
+        let addr = listener.local_addr().unwrap();
+        let remote_url = format!("http://{}", addr);
+        tokio::spawn(async move {
+            axum::Server::from_tcp(listener)
+                .unwrap()
+                .serve(app(&remote_url).into_make_service())
+                .await
+                .unwrap();
+        });
 
-        let response = app
-            .oneshot(
+        let client = hyper::Client::new();
+
+        let response = client
+            .request(
                 Request::builder()
-                    .uri("/?duration_level_max=0.01")
+                    .uri(format!("http://{}/?duration_level_max=0.01&depth=1", addr))
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -186,9 +244,8 @@ mod tests {
             .unwrap();
 
         check!(response.status() == StatusCode::OK);
-
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         let body: Value = serde_json::from_slice(&body).unwrap();
-        check!(body == json!({ "simulation": "DONE" }));
+        check!(body == json!({ "depth": 1, "response": { "simulation": "DONE" }}));
     }
 }

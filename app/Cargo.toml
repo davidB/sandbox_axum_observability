@@ -7,15 +7,19 @@ publish = false
 [dependencies]
 axum = "0.5"
 #axum-extra = { path = "../../axum-extra", features = ["opentelemetry"] }
+clap = { version = "3.1", features = ["derive", "env"] }
 http = "0.2"
 opentelemetry-lib = { package = "opentelemetry", version = "0.17", features = [
   "rt-tokio",
 ] }
 opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
 rand = "0.8"
+reqwest = { version = "0.11", features = ["json"] }
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
 tokio = { version = "1.17", features = ["full"] }
 tower = "0.4"
-tower-http = { version = "0.2", features = ["trace", "cors"] }
+tower-http = { version = "0.3", features = ["trace", "cors"] }
 tracing = "0.1"
 tracing-opentelemetry = "0.17"
 tracing-subscriber = { version = "0.3", default-features = false, features = [
@@ -24,10 +28,6 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
   "json",
 ] }
 uuid = { version = "1.0", features = ["v4"] }
-
-clap = { version = "3.1", features = ["derive", "env"] }
-serde = { version = "1.0.136", features = ["derive"] }
-serde_json = "1.0.79"
 
 [dev-dependencies]
 assert2 = "0.3.6"

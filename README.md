@@ -23,9 +23,9 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
   - [ ] Log include trace_id to easily link response, log and trace
 - [ ] To simulate a multi-level microservice architecture, the service can call `APP_REMOTE_URL` (to define as it-self in the infra)
 - [ ] Provide a endpoint `GET /` that wait a `duration` then call endpoint defined by `APP_REMOTE_URL` with the query parameter `depth` equals to current `depth - 1`
-  - [ ] `depth`: value between 0 and 10, if undefined a random value will be used.
+  - [x] `depth`: value between 0 and 10, if undefined a random value will be used.
   - [x] `duration_level_max`: duration in seconds, if undefined a random between 0.0 and 2.0
-  - [ ] the response of `APP_REMOTE_URL` is returned as response
+  - [x] the response of `APP_REMOTE_URL` is returned as wrapped response
   - [ ] if `depth` is 0, then it returns the `{ "ok_trace_id": "...."}`
   - [ ] if failure, then it returns the `{ "err_trace_id": "...."}`
 - [ ] To simulate error
