@@ -6,6 +6,7 @@ Sandbox I used to experiment [axum] and observability (for target platform), obs
 
 - [App (Rust http service)](#app-rust-http-service)
   - [Main components for the app](#main-components-for-the-app)
+  - [Usage on local shell](#usage-on-local-shell)
 - [Infra](#infra)
   - [Main components for the infra](#main-components-for-the-infra)
   - [Infra setup](#infra-setup)
@@ -21,7 +22,7 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
   - [x] Health-check via a `GET /health` endpoint
   - [x] Log printed on std output, in json format
   - [ ] Log include trace_id to easily link response, log and trace
-- [ ] To simulate a multi-level microservice architecture, the service can call `APP_REMOTE_URL` (to define as it-self in the infra)
+- [x] To simulate a multi-level microservice architecture, the service can call `APP_REMOTE_URL` (to define as it-self in the infra)
 - [ ] Provide a endpoint `GET /` that wait a `duration` then call endpoint defined by `APP_REMOTE_URL` with the query parameter `depth` equals to current `depth - 1`
   - [x] `depth`: value between 0 and 10, if undefined a random value will be used.
   - [x] `duration_level_max`: duration in seconds, if undefined a random between 0.0 and 2.0
@@ -37,6 +38,40 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
 - [ ] [tokio-rs/axum: Ergonomic and modular web framework built with Tokio, Tower, and Hyper](https://github.com/tokio-rs/axum) as rust web framework.
 - [ ] [tokio-rs/tracing: Application level tracing for Rust.](https://github.com/tokio-rs/tracing) (and also for log)
 - [ ] [OpenTelemetry](https://opentelemetry.io/)
+
+### Usage on local shell
+
+Launch the server
+
+```sh
+cd app
+cargo run
+```
+
+Launch a local opentelemetry "collector" (eg jaeger)
+
+```sh
+## docker cli can be used instead of nerdctl
+nerdctl run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
+
+# open web ui
+open http://localhost:16686/
+```
+
+Send http request from a curl client
+
+```sh
+# without client trace
+curl -i "http://localhost:8080/?depth=2"
+
+# with client trace
+# for traceparent see [Trace Context](https://www.w3.org/TR/trace-context/#trace-context-http-headers-format)
+curl -i "http://localhost:8080/?depth=2" -H 'traceparent: 00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01'
+```
+
+on jaeger web ui,  service `example-opentelemetry` should be listed and trace should be like
+
+![trace in jaeger](doc/images/20220521164336.png)
 
 ## Infra
 
