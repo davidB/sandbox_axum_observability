@@ -1,6 +1,6 @@
 mod middleware;
 
-use axum::extract::Query;
+use axum::extract::{Path, Query};
 use axum::http::Method;
 use axum::Extension;
 use axum::{response::IntoResponse, routing::get, Router};
@@ -95,6 +95,7 @@ fn app(remote_url: &str) -> Router {
     // build our application with a route
     Router::new()
         .route("/health", get(health))
+        .route("/depth/:depth", get(simulation_depth))
         .route("/", get(simulation))
         .layer(Extension(simulation_settings))
         .layer(
@@ -159,23 +160,29 @@ async fn simulation(
     settings: Extension<SimulationSettings>,
 ) -> impl IntoResponse {
     let mut rng: StdRng = SeedableRng::from_entropy();
+    let depth = rng.gen_range(0..=10);
+    simulation_depth(Path(depth), params, settings).await
+}
+
+async fn simulation_depth(
+    Path(depth): Path<i32>,
+    params: Option<Query<SimulationParams>>,
+    settings: Extension<SimulationSettings>,
+) -> impl IntoResponse {
+    let mut rng: StdRng = SeedableRng::from_entropy();
     let duration_level_max = params
         .clone()
         .and_then(|o| o.duration_level_max)
         .unwrap_or(2.0_f32);
     let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
     tokio::time::sleep(duration).await;
-
-    let depth = params
-        .and_then(|o| o.depth)
-        .unwrap_or_else(|| rng.gen_range(0..=10))
-        .min(10);
+    let depth = depth.min(10).max(0);
     let resp_body = if depth > 0 {
         let url = format!(
-            "{}?duration={}&depth={}",
+            "{}depth/{}?duration={}",
             settings.remote_url,
+            depth - 1,
             duration_level_max,
-            depth - 1
         );
         let client = ClientBuilder::new(reqwest::Client::new())
             .with(TracingMiddleware)

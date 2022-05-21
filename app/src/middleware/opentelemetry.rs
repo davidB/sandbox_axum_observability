@@ -93,6 +93,19 @@ pub fn opentelemetry_tracing_layer() -> TraceLayer<
 #[derive(Clone, Copy, Debug)]
 pub struct OtelMakeSpan;
 
+// fn find_trace_id() -> Option<String> {
+//     use opentelemetry::trace::TraceContextExt;
+//     use tracing_opentelemetry::OpenTelemetrySpanExt;
+//     // let context = opentelemetry::Context::current();
+//     // OpenTelemetry Context is propagation inside code is done via tracing crate
+//     let context = tracing::Span::current().context();
+//     let span = context.span();
+//     let span_context = span.span_context();
+//     span_context
+//         .is_valid()
+//         .then(|| span_context.trace_id().to_string())
+// }
+
 impl<B> MakeSpan<B> for OtelMakeSpan {
     fn make_span(&mut self, req: &Request<B>) -> Span {
         let user_agent = req
@@ -142,8 +155,14 @@ impl<B> MakeSpan<B> for OtelMakeSpan {
         let trace_id = span_context
             .is_valid()
             .then(|| Cow::from(span_context.trace_id().to_string()))
+            // .or_else(|| {
+            //     use opentelemetry::trace::IdGenerator;
+            //     let id_generator = opentelemetry::sdk::trace::IdGenerator::default();
+            //     Some(Cow::from(id_generator.new_trace_id().to_string()))
+            // })
             .unwrap_or_default();
         // dbg!(&trace_id);
+        // dbg!("0", find_trace_id());
         let span = tracing::info_span!(
             "HTTP request",
             otel.name= "{http.method} {http.route}",
@@ -160,9 +179,9 @@ impl<B> MakeSpan<B> for OtelMakeSpan {
             otel.status_code = Empty,
             trace_id = %trace_id,
         );
-
+        // dbg!("1", find_trace_id());
         tracing_opentelemetry::OpenTelemetrySpanExt::set_parent(&span, remote_context);
-
+        // dbg!("2", find_trace_id());
         span
     }
 }
