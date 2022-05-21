@@ -26,7 +26,7 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
   - [x] `depth`: value between 0 and 10, if undefined a random value will be used.
   - [x] `duration_level_max`: duration in seconds, if undefined a random between 0.0 and 2.0
   - [x] the response of `APP_REMOTE_URL` is returned as wrapped response
-  - [ ] if `depth` is 0, then it returns the `{ "ok_trace_id": "...."}`
+  - [x] if `depth` is 0, then it returns the `{ "trace_id": "...."}`
   - [ ] if failure, then it returns the `{ "err_trace_id": "...."}`
 - [ ] To simulate error
   - [ ] `GET /health` can failed randomly via configuration `APP_HEALTH_FAILURE_PROBABILITY` (value between `0.0` and `1.0`)
