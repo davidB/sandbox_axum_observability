@@ -7,6 +7,8 @@ use axum::{response::IntoResponse, routing::get, Router};
 use clap::Parser;
 use opentelemetry_lib as opentelemetry;
 use rand::prelude::*;
+use reqwest_middleware::ClientBuilder;
+use reqwest_tracing::TracingMiddleware;
 use serde::Deserialize;
 use serde_json::json;
 use std::net::SocketAddr;
@@ -152,7 +154,13 @@ async fn simulation(
             duration_level_max,
             depth - 1
         );
-        let resp = reqwest::get(url)
+        let client = ClientBuilder::new(reqwest::Client::new())
+            .with(TracingMiddleware)
+            .build();
+
+        let resp = client
+            .get(url)
+            .send()
             .await
             .expect("response for get")
             .json::<serde_json::Value>()

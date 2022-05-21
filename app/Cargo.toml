@@ -11,10 +11,13 @@ clap = { version = "3.1", features = ["derive", "env"] }
 http = "0.2"
 opentelemetry-lib = { package = "opentelemetry", version = "0.17", features = [
   "rt-tokio",
+  "serialize",
 ] }
 opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
 rand = "0.8"
 reqwest = { version = "0.11", features = ["json"] }
+reqwest-middleware = { version = "0.1" }
+reqwest-tracing = { version = "0.2", features = ["opentelemetry_0_17"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 tokio = { version = "1.17", features = ["full"] }
