@@ -12,10 +12,8 @@ use reqwest_tracing::TracingMiddleware;
 use serde::Deserialize;
 use serde_json::json;
 use std::net::SocketAddr;
-use std::sync::Arc;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
-use tower_http::trace::TraceLayer;
 // use tracing::warn;
 
 #[derive(Parser, Debug)]
@@ -48,6 +46,7 @@ fn init_tracing(log_level: String) {
         opentelemetry::sdk::propagation::TraceContextPropagator::new(),
     );
 
+    // let tracer = stdout::new_pipeline().install_simple();
     let tracer = opentelemetry_jaeger::new_pipeline()
         .with_service_name(env!("CARGO_PKG_NAME"))
         .install_batch(opentelemetry::runtime::Tokio)
@@ -84,7 +83,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::warn!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
-        // .with_graceful_shutdown(shutdown_signal())
+        .with_graceful_shutdown(shutdown_signal())
         .await?;
     Ok(())
 }
@@ -107,15 +106,39 @@ fn app(remote_url: &str) -> Router {
                 .allow_origin(Any),
         )
         // TODO switch to axum-extra opentelemetry when ready [Add OpenTelemetry middleware by davidpdrsn · Pull Request #769 · tokio-rs/axum](https://github.com/tokio-rs/axum/pull/769)
-        .layer(middleware::opentelemetry_tracing_layer()) // `TraceLayer` is provided by tower-http so you have to add that as a dependency.
-        // It provides good defaults but is also very customizable.
-        //
-        // See https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html for more details.
-        .layer(TraceLayer::new_for_http())
+        // opentelemetry_tracing_layer setup `TraceLayer`, that is provided by tower-http so you have to add that as a dependency.
+        .layer(middleware::opentelemetry_tracing_layer())
 }
 
 async fn health() -> impl IntoResponse {
     axum::Json(json!({ "status" : "UP" }))
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    tracing::warn!("signal received, starting graceful shutdown");
+    opentelemetry::global::shutdown_tracer_provider();
 }
 
 #[derive(Debug, Deserialize, Clone)]
