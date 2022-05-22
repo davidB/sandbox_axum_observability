@@ -238,3 +238,5 @@ tags
 
 # ignore report from MegaLinter
 report/
+
+tempo-data

@@ -1,0 +1,22 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  opencensus:
+  zipkin:
+  jaeger:
+    protocols:
+      grpc:
+      thrift_http:
+      thrift_compact:
+      thrift_binary:
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    insecure: true
+service:
+  pipelines:
+    traces:
+      receivers: [otlp, opencensus, zipkin, jaeger]
+      exporters: [otlp]
