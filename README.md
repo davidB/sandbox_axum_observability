@@ -132,8 +132,11 @@ Launch the server
 cargo run
 ```
 
-open your browser to grafana explorer [http://localhost:3000/explore](http://localhost:3000/explore), select `Tempo` datasource (pre-configured),  copy/paste the trace_id from log into search field, click "Run Query"
+Send some curl command
 
+Open your browser to grafana explorer [http://localhost:3000/explore](http://localhost:3000/explore), select `Tempo` datasource (pre-configured),  copy/paste the trace_id from log into search field, click "Run Query"
+
+![](doc/images/20220522173234.png)
 ## Infra
 
 The setup of the infrastructure (cluster) defined under `/infra`.
