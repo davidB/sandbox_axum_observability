@@ -171,14 +171,14 @@ async fn simulation_depth(
     params: Option<Query<SimulationParams>>,
     settings: Extension<SimulationSettings>,
 ) -> impl IntoResponse {
-    let mut rng: StdRng = SeedableRng::from_entropy();
     let duration_level_max = params
         .clone()
         .and_then(|o| o.duration_level_max)
         .unwrap_or(2.0_f32);
-    let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
-    tokio::time::sleep(duration).await;
     let depth = depth.min(10).max(0);
+
+    fake_job(duration_level_max).await;
+
     let resp_body = if depth > 0 {
         let url = format!(
             "{}depth/{}?duration={}",
@@ -186,37 +186,35 @@ async fn simulation_depth(
             depth - 1,
             duration_level_max,
         );
-        let client = ClientBuilder::new(reqwest::Client::new())
-            .with(TracingMiddleware)
-            .build();
-
-        let resp = client
-            .get(url)
-            .send()
-            .await
-            .expect("response for get")
-            .json::<serde_json::Value>()
-            .await
-            .expect("json response for get");
+        let resp = call_remote_app(&url).await.expect("json response for get");
         json!({ "depth": depth, "response": resp })
     } else {
-        let trace_id = find_trace_id();
+        let trace_id = opentelemetry_tools::find_trace_id();
         json!({ "simulation" :  "DONE", "trace_id": trace_id})
     };
     axum::Json(resp_body)
 }
 
-fn find_trace_id() -> Option<String> {
-    use opentelemetry::trace::TraceContextExt;
-    use tracing_opentelemetry::OpenTelemetrySpanExt;
-    // let context = opentelemetry::Context::current();
-    // OpenTelemetry Context is propagation inside code is done via tracing crate
-    let context = tracing::Span::current().context();
-    let span = context.span();
-    let span_context = span.span_context();
-    span_context
-        .is_valid()
-        .then(|| span_context.trace_id().to_string())
+#[tracing::instrument]
+async fn fake_job(duration_level_max: f32) {
+    let mut rng: StdRng = SeedableRng::from_entropy();
+    let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
+    tokio::time::sleep(duration).await
+}
+
+async fn call_remote_app(url: &str) -> Result<serde_json::Value, reqwest::Error> {
+    // TracingMiddleware create a span on request
+    let client = ClientBuilder::new(reqwest::Client::new())
+        .with(TracingMiddleware)
+        .build();
+
+    client
+        .get(url)
+        .send()
+        .await
+        .expect("response for get")
+        .json::<serde_json::Value>()
+        .await
 }
 
 #[cfg(test)]
@@ -277,6 +275,7 @@ mod tests {
         let listener = TcpListener::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).unwrap();
         let addr = listener.local_addr().unwrap();
         let remote_url = format!("http://{}", addr);
+        dbg!(&remote_url);
         tokio::spawn(async move {
             axum::Server::from_tcp(listener)
                 .unwrap()
@@ -290,7 +289,7 @@ mod tests {
         let response = client
             .request(
                 Request::builder()
-                    .uri(format!("http://{}/?duration_level_max=0.01&depth=1", addr))
+                    .uri(format!("http://{}/depth/1?duration_level_max=0.01", &addr))
                     .body(Body::empty())
                     .unwrap(),
             )
