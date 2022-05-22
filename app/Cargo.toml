@@ -5,6 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
+anyhow = "1.0"
 axum = "0.5"
 #axum-extra = { path = "../../axum-extra", features = ["opentelemetry"] }
 clap = { version = "3.1", features = ["derive", "env"] }
@@ -14,6 +15,13 @@ opentelemetry-lib = { package = "opentelemetry", version = "0.17", features = [
   "serialize",
 ] }
 opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.10", features = [
+  "http-proto",
+  "reqwest-client",
+  "reqwest-rustls",
+] }
+opentelemetry-http = { version = "0.6.0" }
+opentelemetry-semantic-conventions = { version = "0.9.0" }
 rand = "0.8"
 reqwest = { version = "0.11", features = ["json"] }
 reqwest-middleware = { version = "0.1" }

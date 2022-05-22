@@ -1,4 +1,5 @@
 mod middleware;
+mod opentelemetry_tools;
 
 use axum::extract::{Path, Query};
 use axum::http::Method;
@@ -32,25 +33,26 @@ pub struct Settings {
     pub log_level: String,
     #[clap(long, env("APP_REMOTE_URL"))]
     pub remote_url: Option<String>,
+    // #[clap(long, env("APP_TRACING_COLLECTOR_URL"))]
+    // pub tracing_collector_url: Option<String>,
+    #[clap(
+        long,
+        env("APP_TRACING_COLLECTOR_KIND"),
+        default_value("otlp"),
+        arg_enum
+    )]
+    pub tracing_collector_kind: opentelemetry_tools::CollectorKind,
 }
 
-fn init_tracing(log_level: String) {
+fn init_tracing(log_level: String, tracing_collector_kind: opentelemetry_tools::CollectorKind) {
     use tracing_subscriber::filter::EnvFilter;
     use tracing_subscriber::fmt::format::FmtSpan;
     use tracing_subscriber::layer::SubscriberExt;
+
     // std::env::set_var("RUST_LOG", "info,kube=trace");
     std::env::set_var("RUST_LOG", std::env::var("RUST_LOG").unwrap_or(log_level));
 
-    // start an otel jaeger trace pipeline
-    opentelemetry::global::set_text_map_propagator(
-        opentelemetry::sdk::propagation::TraceContextPropagator::new(),
-    );
-
-    // let tracer = stdout::new_pipeline().install_simple();
-    let tracer = opentelemetry_jaeger::new_pipeline()
-        .with_service_name(env!("CARGO_PKG_NAME"))
-        .install_batch(opentelemetry::runtime::Tokio)
-        .expect("setup of Tracer");
+    let tracer = opentelemetry_tools::init_tracer(tracing_collector_kind).expect("setup of Tracer");
     let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
 
     let fmt_layer = tracing_subscriber::fmt::layer()
@@ -73,7 +75,7 @@ fn init_tracing(log_level: String) {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = Settings::parse();
-    init_tracing(settings.log_level);
+    init_tracing(settings.log_level, settings.tracing_collector_kind);
     let remote_url = settings
         .remote_url
         .unwrap_or_else(|| format!("http://{}:{}/", settings.host, settings.port));
