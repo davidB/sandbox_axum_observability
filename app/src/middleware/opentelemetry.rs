@@ -16,6 +16,7 @@ use tower_http::{
     trace::{MakeSpan, OnBodyChunk, OnEos, OnFailure, OnRequest, OnResponse, TraceLayer},
 };
 use tracing::{field::Empty, Span};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 /// OpenTelemetry tracing middleware.
 ///
@@ -93,19 +94,6 @@ pub fn opentelemetry_tracing_layer() -> TraceLayer<
 #[derive(Clone, Copy, Debug)]
 pub struct OtelMakeSpan;
 
-// fn find_trace_id() -> Option<String> {
-//     use opentelemetry::trace::TraceContextExt;
-//     use tracing_opentelemetry::OpenTelemetrySpanExt;
-//     // let context = opentelemetry::Context::current();
-//     // OpenTelemetry Context is propagation inside code is done via tracing crate
-//     let context = tracing::Span::current().context();
-//     let span = context.span();
-//     let span_context = span.span_context();
-//     span_context
-//         .is_valid()
-//         .then(|| span_context.trace_id().to_string())
-// }
-
 impl<B> MakeSpan<B> for OtelMakeSpan {
     fn make_span(&mut self, req: &Request<B>) -> Span {
         let user_agent = req
@@ -155,33 +143,35 @@ impl<B> MakeSpan<B> for OtelMakeSpan {
         let trace_id = span_context
             .is_valid()
             .then(|| Cow::from(span_context.trace_id().to_string()))
-            // .or_else(|| {
-            //     use opentelemetry::trace::IdGenerator;
-            //     let id_generator = opentelemetry::sdk::trace::IdGenerator::default();
-            //     Some(Cow::from(id_generator.new_trace_id().to_string()))
-            // })
             .unwrap_or_default();
-        // dbg!(&trace_id);
-        // dbg!("0", find_trace_id());
+        let http_method_v = http_method(req.method());
+        let name = format!("{} {}", http_method_v, http_route);
         let span = tracing::info_span!(
             "HTTP request",
-            otel.name= "{http.method} {http.route}",
+            otel.name= %name,
             http.client_ip = %client_ip,
             http.flavor = %http_flavor(req.version()),
             http.host = %host,
-            http.method = %http_method(req.method()),
+            http.method = %http_method_v,
             http.route = %http_route,
             http.scheme = %scheme,
             http.status_code = Empty,
             http.target = %http_target,
             http.user_agent = %user_agent,
-            otel.kind = "server",
+            otel.kind = %opentelemetry_lib::trace::SpanKind::Server,
             otel.status_code = Empty,
             trace_id = %trace_id,
         );
-        // dbg!("1", find_trace_id());
+        // dbg!("1", crate::opentelemetry_tools::find_trace_id());
         tracing_opentelemetry::OpenTelemetrySpanExt::set_parent(&span, remote_context);
-        // dbg!("2", find_trace_id());
+        //HACK (until being able to have trace_id before span creation)
+        // If tracing_id is empty, OpenTelemetry create a new trace_id when span is attached
+        // but tracing::Span is not updated
+        // Currently, I don't know when the trace_id is defined and attached during the `set_parent`
+        let trace_id = tracing::field::debug(span.context().span().span_context().trace_id());
+        span.record("trace_id", &trace_id);
+        // dbg!("2", crate::opentelemetry_tools::find_trace_id());
+        // dbg!("3", span.context().span().span_context().trace_id());
         span
     }
 }
@@ -336,7 +326,7 @@ mod tests {
         EnvFilter,
     };
 
-    // #[tokio::test]
+    #[tokio::test]
     async fn correct_fields_on_span_for_http() {
         let svc = Router::new()
             .route("/", get(|| async { StatusCode::OK }))
