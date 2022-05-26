@@ -12,6 +12,13 @@ pub enum CollectorKind {
 }
 
 pub fn init_tracer(kind: CollectorKind) -> Result<sdktrace::Tracer, TraceError> {
+    // use opentelemetry_otlp::WithExportConfig;
+    use opentelemetry_semantic_conventions as semcov;
+    let resource = Resource::new(vec![
+        semcov::resource::SERVICE_NAME.string(env!("CARGO_PKG_NAME")), //TODO Replace with the name of your application
+        semcov::resource::SERVICE_VERSION.string(env!("CARGO_PKG_VERSION")), //TODO Replace with the version of your application
+    ]);
+
     match kind {
         CollectorKind::Otlp => {
             // if let Some(url) = std::env::var_os("OTEL_COLLECTOR_URL")
@@ -19,12 +26,12 @@ pub fn init_tracer(kind: CollectorKind) -> Result<sdktrace::Tracer, TraceError> 
             // let collector_url = url.to_str().ok_or(TraceError::Other(
             //     anyhow!("failed to parse OTEL_COLLECTOR_URL").into(),
             // ))?;
-            init_tracer_otlp()
+            init_tracer_otlp(resource)
         }
         CollectorKind::Jaeger => {
             // Or "OTEL_EXPORTER_JAEGER_ENDPOINT"
             // or now variable
-            init_tracer_jaeger()
+            init_tracer_jaeger(resource)
         } // _ => {
           //     //sdktrace::stdout::new_pipeline().install_simple()
           //     Err(TraceError::Other(anyhow!("no config found").into()))
@@ -32,16 +39,8 @@ pub fn init_tracer(kind: CollectorKind) -> Result<sdktrace::Tracer, TraceError> 
     }
 }
 
-pub fn init_tracer_otlp() -> Result<sdktrace::Tracer, TraceError> {
-    // use opentelemetry_otlp::WithExportConfig;
-    use opentelemetry_semantic_conventions as semcov;
-
+pub fn init_tracer_otlp(resource: Resource) -> Result<sdktrace::Tracer, TraceError> {
     global::set_text_map_propagator(TraceContextPropagator::new());
-
-    let resource = Resource::new(vec![
-        semcov::resource::SERVICE_NAME.string(env!("CARGO_PKG_NAME")), //TODO Replace with the name of your application
-        semcov::resource::SERVICE_VERSION.string(env!("CARGO_PKG_VERSION")), //TODO Replace with the version of your application
-    ]);
 
     // resource = resource.merge(&read_dt_metadata());
 
@@ -60,13 +59,18 @@ pub fn init_tracer_otlp() -> Result<sdktrace::Tracer, TraceError> {
 }
 
 // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#jaeger-exporter
-pub fn init_tracer_jaeger() -> Result<sdktrace::Tracer, TraceError> {
+pub fn init_tracer_jaeger(resource: Resource) -> Result<sdktrace::Tracer, TraceError> {
     opentelemetry::global::set_text_map_propagator(
         opentelemetry::sdk::propagation::TraceContextPropagator::new(),
     );
 
     opentelemetry_jaeger::new_pipeline()
         .with_service_name(env!("CARGO_PKG_NAME"))
+        .with_trace_config(
+            sdktrace::config()
+                .with_resource(resource)
+                .with_sampler(sdktrace::Sampler::AlwaysOn),
+        )
         .install_batch(opentelemetry::runtime::Tokio)
 }
 
@@ -83,33 +87,54 @@ pub fn find_trace_id() -> Option<String> {
         .then(|| span_context.trace_id().to_string())
 }
 
-#[cfg(test)]
-mod tests {
-    use opentelemetry::{
-        trace::{TraceContextExt, TraceId},
-        Context,
-    };
+// #[cfg(test)]
+// mod tests {
+//     use opentelemetry::{
+//         trace::{FutureExt, Span, SpanBuilder, TraceContextExt, TraceId, Tracer},
+//         Context,
+//     };
 
-    use super::*;
+//     use super::*;
 
-    // #[test]
-    // fn try_to_create_context_with_trace_id() {
-    //     // let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
-    //     //     //propagator.extract(&HeaderCarrier::new(req.headers_mut()))
-    //     //     propagator.
-    //     // });
-    //     // // // let conn_info = req.connection_info();
-    //     // let uri = req.uri();
-    //     // let mut builder = self
-    //     //     .tracer
-    //     //     .span_builder(uri.path().to_string())
-    //     //     .with_kind(SpanKind::Server);
-    //     let cx = Context::new(); //.with_value(ValueA("a"));
+//     #[tokio::test]
+//     async fn try_to_create_context_with_trace_id() {
+//         // let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
+//         //     //propagator.extract(&HeaderCarrier::new(req.headers_mut()))
+//         //     propagator.
+//         // });
+//         // // // let conn_info = req.connection_info();
+//         // let uri = req.uri();
+//         // let mut builder = self
+//         //     .tracer
+//         //     .span_builder(uri.path().to_string())
+//         //     .with_kind(SpanKind::Server);
+//         let _ = init_tracer(CollectorKind::Otlp);
+//         // use opentelemetry_semantic_conventions as semcov;
+//         // let resource = Resource::new(vec![
+//         //     // semcov::resource::SERVICE_NAME.string(env!("CARGO_PKG_NAME")), //TODO Replace with the name of your application
+//         //     // semcov::resource::SERVICE_VERSION.string(env!("CARGO_PKG_VERSION")), //TODO Replace with the version of your application
+//         // ]);
+//         // let _ = init_tracer_otlp(resource);
 
-    //     // Values can be queried by type
-    //     // assert_eq!(cx.get::<String>(), Some("hello".to_string()));
-    //     dbg!(cx.get::<TraceId>());
-    //     dbg!(cx.span().span_context().get::<TraceId>());
-    //     assert_eq!(true, true);
-    // }
-}
+//         let tracer = global::tracer("");
+//         tracer.in_span("operation", |cx| {
+//             dbg!(cx.span().span_context().trace_id());
+//         });
+//         let cx = Context::new(); //.with_value(ValueA("a"));
+//                                  //tracer.with_context(cx);
+//                                  //let cx = Context::current();
+//         let span = tracer.build_with_context(SpanBuilder::from_name("hello"), &cx);
+//         // Values can be queried by type
+//         // assert_eq!(cx.get::<String>(), Some("hello".to_string()));
+//         dbg!(cx.get::<TraceId>());
+//         dbg!(cx.span().span_context().trace_id());
+//         dbg!(span.span_context().trace_id());
+//         // dbg!(span
+//         //     .span_context()
+//         //     .context()
+//         //     .span()
+//         //     .span_context()
+//         //     .trace_id());
+//         assert_eq!(true, true);
+//     }
+// }
