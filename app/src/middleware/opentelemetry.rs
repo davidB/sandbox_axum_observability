@@ -16,7 +16,6 @@ use tower_http::{
     trace::{MakeSpan, OnBodyChunk, OnEos, OnFailure, OnRequest, OnResponse, TraceLayer},
 };
 use tracing::{field::Empty, Span};
-use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 /// OpenTelemetry tracing middleware.
 ///
@@ -137,7 +136,7 @@ impl<B> MakeSpan<B> for OtelMakeSpan {
             })
             .unwrap_or_default();
 
-        let remote_context = extract_remote_context(req.headers());
+        let remote_context = create_context_with_trace(extract_remote_context(req.headers()));
         let remote_span = remote_context.span();
         let span_context = remote_span.span_context();
         let trace_id = span_context
@@ -162,16 +161,16 @@ impl<B> MakeSpan<B> for OtelMakeSpan {
             otel.status_code = Empty,
             trace_id = %trace_id,
         );
-        // dbg!("1", crate::opentelemetry_tools::find_trace_id());
         tracing_opentelemetry::OpenTelemetrySpanExt::set_parent(&span, remote_context);
+
         //HACK (until being able to have trace_id before span creation)
         // If tracing_id is empty, OpenTelemetry create a new trace_id when span is attached
         // but tracing::Span is not updated
         // Currently, I don't know when the trace_id is defined and attached during the `set_parent`
-        let trace_id = tracing::field::debug(span.context().span().span_context().trace_id());
-        span.record("trace_id", &trace_id);
-        // dbg!("2", crate::opentelemetry_tools::find_trace_id());
-        // dbg!("3", span.context().span().span_context().trace_id());
+        //
+        // let trace_id = tracing::field::debug(span.context().span().span_context().trace_id());
+        // span.record("trace_id", &trace_id);
+
         span
     }
 }
@@ -235,6 +234,22 @@ fn extract_remote_context(headers: &http::HeaderMap) -> opentelemetry::Context {
 
     let extractor = HeaderExtractor(headers);
     opentelemetry::global::get_text_map_propagator(|propagator| propagator.extract(&extractor))
+}
+
+//HACK create a context with a trace_id (if not set) before call to `tracing_opentelemetry::OpenTelemetrySpanExt::set_parent`
+// else trace_id is defined too late and the `info_span` log `trace_id: ""`
+// Use the default global tracer (named "") to start the trace
+fn create_context_with_trace(remote_context: opentelemetry::Context) -> opentelemetry::Context {
+    if !remote_context.span().span_context().is_valid() {
+        // start a new valid
+        use opentelemetry::global;
+        use opentelemetry::trace::{SpanBuilder, Tracer};
+        let tracer = global::tracer("");
+        let span = tracer.build_with_context(SpanBuilder::from_name("hello"), &remote_context);
+        remote_context.with_span(span)
+    } else {
+        remote_context
+    }
 }
 
 /// Callback that [`Trace`] will call when it receives a request.

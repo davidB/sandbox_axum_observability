@@ -23,10 +23,10 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
   - [x] Configuration dependent of the platform / stack override via Environment variable (use clap)
   - [x] Health-check via a `GET /health` endpoint
   - [x] Log printed on std output, in json format
-  - [ ] Log include trace_id to easily link response, log and trace
+  - [x] Log include trace_id to easily link response, log and trace
     - [x] on first log of the span, when incoming request has trace_id
     - [x] on following log of the span, when incoming request has trace_id
-    - [ ] on first log of the span, when incoming request has NO trace_id (imply start an new one)
+    - [x] on first log of the span, when incoming request has NO trace_id (imply start an new one)
     - [x] on following log of the span, when incoming request has trace_id
 - [x] To simulate a multi-level microservice architecture, the service can call `APP_REMOTE_URL` (to define as it-self in the infra)
 - [ ] Provide a endpoint `GET /depth/{:depth}` that wait a `duration` then call endpoint defined by `APP_REMOTE_URL` with the path parameter `depth` equals to current `depth - 1`
@@ -35,7 +35,7 @@ The setup of the app (microservice) defined under `/app`. The Goals of the app
   - [x] the response of `APP_REMOTE_URL` is returned as wrapped response
   - [x] if `depth` is 0, then it returns the `{ "trace_id": "...."}`
   - [ ] if failure, then it returns the `{ "err_trace_id": "...."}`
-  - [ ] call `GET /` is like calling `GET /depth/{:depth}` with a random depth between 0 and 10
+  - [x] call `GET /` is like calling `GET /depth/{:depth}` with a random depth between 0 and 10
 - [ ] To simulate error
   - [ ] `GET /health` can failed randomly via configuration `APP_HEALTH_FAILURE_PROBABILITY` (value between `0.0` and `1.0`)
   - [ ] `GET /depth/{}` can failed randomly via query parameter `failure_probability` (value between `0.0` and `1.0`)
