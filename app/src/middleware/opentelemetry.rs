@@ -244,6 +244,7 @@ fn create_context_with_trace(remote_context: opentelemetry::Context) -> opentele
         // start a new valid
         use opentelemetry::global;
         use opentelemetry::trace::{SpanBuilder, Tracer};
+        //TODO use the otlp tracer defined as subscriber for tracing
         let tracer = global::tracer("");
         let span = tracer.build_with_context(SpanBuilder::from_name("hello"), &remote_context);
         remote_context.with_span(span)
@@ -368,6 +369,17 @@ mod tests {
         )
         .await;
 
+        //assert that trace_id is not "" when tracer is not Noop
+        assert!(!root_new
+            .as_object()
+            .and_then(|o| o.get("span"))
+            .and_then(|o| o.as_object())
+            .and_then(|o| o.get("trace_id"))
+            .and_then(|o| o.as_str())
+            .map(|o| o.to_string())
+            .unwrap()
+            .is_empty());
+
         assert_json_include!(
             actual: root_new,
             expected: json!({
@@ -384,9 +396,9 @@ mod tests {
                     "http.scheme": "HTTP",
                     "http.target": "/",
                     "http.user_agent": "tests",
-                    "name": "{http.method} {http.route}",
+                    "name": "HTTP request",
                     "otel.kind": "server",
-                    "trace_id": ""
+                    "otel.name": "GET /",
                 }
             }),
         );
@@ -408,10 +420,10 @@ mod tests {
                     "http.status_code": "200",
                     "http.target": "/",
                     "http.user_agent": "tests",
-                    "name": "{http.method} {http.route}",
+                    "name": "HTTP request",
                     "otel.kind": "server",
                     "otel.status_code": "OK",
-                    "trace_id": ""
+                    "otel.name": "GET /",
                 }
             }),
         );
@@ -444,14 +456,25 @@ mod tests {
         reqs: [Request<Body>; N],
     ) -> [(Value, Value); N] {
         use axum::body::HttpBody as _;
+        use tracing_subscriber::layer::SubscriberExt;
+
+        // setup a non Noop OpenTelemetry tracer to have non-empty trace_id
+        let tracer = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(opentelemetry_otlp::new_exporter().tonic())
+            .install_batch(opentelemetry::runtime::Tokio)
+            .unwrap();
+        let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
 
         let (make_writer, rx) = duplex_writer();
-        let subscriber = tracing_subscriber::fmt::fmt()
+        let fmt_layer = tracing_subscriber::fmt::layer()
             .json()
-            .with_env_filter(EnvFilter::try_new("axum_extra=trace").unwrap())
             .with_writer(make_writer)
-            .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-            .finish();
+            .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE);
+        let subscriber = tracing_subscriber::registry()
+            .with(EnvFilter::try_new("axum_extra=trace,info").unwrap())
+            .with(fmt_layer)
+            .with(otel_layer);
         let _guard = subscriber.set_default();
 
         let mut spans = Vec::new();
@@ -466,7 +489,6 @@ mod tests {
             let logs = std::iter::from_fn(|| rx.try_recv().ok())
                 .map(|bytes| serde_json::from_slice::<Value>(&bytes).unwrap())
                 .collect::<Vec<_>>();
-            //dbg!(&logs);
             let [new, close]: [_; 2] = logs.try_into().unwrap();
 
             spans.push((new, close));
