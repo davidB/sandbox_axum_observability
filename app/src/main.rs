@@ -1,12 +1,11 @@
-mod middleware;
-mod opentelemetry_tools;
-
 use axum::extract::{Path, Query};
 use axum::http::Method;
 use axum::Extension;
 use axum::{response::IntoResponse, routing::get, Router};
-use clap::Parser;
-use opentelemetry_lib as opentelemetry;
+use axum_tracing_opentelemetry::{
+    find_current_trace_id, init_tracer, opentelemetry_tracing_layer, CollectorKind,
+};
+use clap::{ArgEnum, Parser};
 use rand::prelude::*;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
@@ -41,24 +40,40 @@ pub struct Settings {
         default_value("otlp"),
         arg_enum
     )]
-    pub tracing_collector_kind: opentelemetry_tools::CollectorKind,
+    pub tracing_collector_kind: MyCollectorKind,
 }
 
-fn init_tracing(log_level: String, tracing_collector_kind: opentelemetry_tools::CollectorKind) {
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ArgEnum)]
+pub enum MyCollectorKind {
+    Otlp,
+    Jaeger,
+    // Stdout,
+}
+
+impl From<MyCollectorKind> for CollectorKind {
+    fn from(v: MyCollectorKind) -> Self {
+        match v {
+            MyCollectorKind::Otlp => Self::Otlp,
+            MyCollectorKind::Jaeger => Self::Jaeger,
+        }
+    }
+}
+
+fn init_tracing(log_level: String, tracing_collector_kind: CollectorKind) {
     use tracing_subscriber::filter::EnvFilter;
-    use tracing_subscriber::fmt::format::FmtSpan;
+    // use tracing_subscriber::fmt::format::FmtSpan;
     use tracing_subscriber::layer::SubscriberExt;
 
     // std::env::set_var("RUST_LOG", "info,kube=trace");
     std::env::set_var("RUST_LOG", std::env::var("RUST_LOG").unwrap_or(log_level));
 
-    let tracer = opentelemetry_tools::init_tracer(tracing_collector_kind).expect("setup of Tracer");
-    let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+    let otel_tracer = init_tracer(tracing_collector_kind).expect("setup of Tracer");
+    let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
 
     let fmt_layer = tracing_subscriber::fmt::layer()
         .json()
         .with_timer(tracing_subscriber::fmt::time::uptime())
-        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        //.with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
         // .with_filter(EnvFilter::from_default_env())
         ;
 
@@ -75,7 +90,7 @@ fn init_tracing(log_level: String, tracing_collector_kind: opentelemetry_tools::
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = Settings::parse();
-    init_tracing(settings.log_level, settings.tracing_collector_kind);
+    init_tracing(settings.log_level, settings.tracing_collector_kind.into());
     let remote_url = settings
         .remote_url
         .unwrap_or_else(|| format!("http://{}:{}/", settings.host, settings.port));
@@ -108,9 +123,7 @@ fn app(remote_url: &str) -> Router {
                 // allow requests from any origin
                 .allow_origin(Any),
         )
-        // TODO switch to axum-extra opentelemetry when ready [Add OpenTelemetry middleware by davidpdrsn · Pull Request #769 · tokio-rs/axum](https://github.com/tokio-rs/axum/pull/769)
-        // opentelemetry_tracing_layer setup `TraceLayer`, that is provided by tower-http so you have to add that as a dependency.
-        .layer(middleware::opentelemetry_tracing_layer())
+        .layer(opentelemetry_tracing_layer())
 }
 
 async fn health() -> impl IntoResponse {
@@ -189,7 +202,7 @@ async fn simulation_depth(
         let resp = call_remote_app(&url).await.expect("json response for get");
         json!({ "depth": depth, "response": resp })
     } else {
-        let trace_id = opentelemetry_tools::find_trace_id();
+        let trace_id = find_current_trace_id();
         json!({ "simulation" :  "DONE", "trace_id": trace_id})
     };
     axum::Json(resp_body)

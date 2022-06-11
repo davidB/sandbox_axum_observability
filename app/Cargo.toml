@@ -7,13 +7,10 @@ publish = false
 [dependencies]
 anyhow = "1.0"
 axum = "0.5"
-#axum-extra = { path = "../../axum-extra", features = ["opentelemetry"] }
+axum-tracing-opentelemetry = { version = "0.2", features = ["jaeger", "otlp"] }
 clap = { version = "3.1", features = ["derive", "env"] }
 http = "0.2"
-opentelemetry-lib = { package = "opentelemetry", version = "0.17", features = [
-  "rt-tokio",
-  "serialize",
-] }
+opentelemetry = { version = "0.17", features = ["rt-tokio", "serialize"] }
 opentelemetry-jaeger = { version = "0.16", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.10", features = [
   "http-proto",
