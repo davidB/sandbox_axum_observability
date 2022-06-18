@@ -8,10 +8,11 @@ Sandbox I used to experiment [axum] and observability (for target platform), obs
   - [Main components for the app](#main-components-for-the-app)
   - [Usage on local shell](#usage-on-local-shell)
   - [direct to Jaeger](#direct-to-jaeger)
-  - [Light infra docker-compose](#light-infra-docker-compose)
 - [Infra](#infra)
-  - [Main components for the infra](#main-components-for-the-infra)
-  - [Infra setup](#infra-setup)
+  - [Light infra docker-compose](#light-infra-docker-compose)
+  - [Kubernetes](#kubernetes)
+    - [Main components for the infra](#main-components-for-the-infra)
+    - [Infra setup](#infra-setup)
 
 ## App (Rust http service)
 
@@ -112,6 +113,8 @@ cargo run -- --tracing-collector-kind jaeger
 nerdctl stop jaeger
 ```
 
+## Infra
+
 ### Light infra docker-compose
 
 based on [tempo/example/docker-compose/otel-collector at main · grafana/tempo](https://github.com/grafana/tempo/tree/main/example/docker-compose/otel-collector)
@@ -119,7 +122,7 @@ based on [tempo/example/docker-compose/otel-collector at main · grafana/tempo](
 The otel-collector is configured to allow to received oltp, jaeger, zipkin trace and to expose port on localhost
 
 ```sh
-cd infra-compose
+cd infra/docker-compose
 
 # or docker-compose
 nerdctl compose up
@@ -137,7 +140,8 @@ Send some curl command
 Open your browser to grafana explorer [http://localhost:3000/explore](http://localhost:3000/explore), select `Tempo` datasource (pre-configured),  copy/paste the trace_id from log into search field, click "Run Query"
 
 ![](doc/images/20220522173234.png)
-## Infra
+
+### Kubernetes
 
 The setup of the infrastructure (cluster) defined under `/infra`.
 
@@ -145,7 +149,7 @@ The setup of the infrastructure (cluster) defined under `/infra`.
 - Setup of grafana and tempo is based on [tempo/example/helm at main · grafana/tempo](https://github.com/grafana/tempo/tree/main/example/helm), in distributed mode (consume more resources, aka several pods) and setup to use minio as S3 store. To be more like a target environment
 - no ingress or api gateway setup, access will be via port forward
 
-### Main components for the infra
+#### Main components for the infra
 
 - [x] [Grafana | Grafana Labs](https://grafana.com/oss/grafana/) for dashboard and integration of log, trace, metrics
 - [x] [Grafana Tempo | Grafana Labs](https://grafana.com/oss/tempo/) to store trace
@@ -154,13 +158,13 @@ The setup of the infrastructure (cluster) defined under `/infra`.
 - [ ] [Linkerd](https://linkerd.io/) a service-mesh but used for its observability feature
 - [ ] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to easily portable for kind, minikube, k3d, k3s,...
 
-### Infra setup
+#### Infra setup
 
 Require: `kubectl`, `helm` v3
 
 ```sh
 # after launch of your local (or remote) cluster, configure kubectl to access it as current context
-infra/setup.sh install
+infra/kubernetes/setup.sh install
 # use `infra/setup.sh uninstall` to uninstall stuff ;-)
 ```
 
