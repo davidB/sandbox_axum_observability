@@ -164,8 +164,8 @@ Require: `kubectl`, `helm` v3
 
 ```sh
 # after launch of your local (or remote) cluster, configure kubectl to access it as current context
-infra/kubernetes/setup.sh install
-# use `infra/setup.sh uninstall` to uninstall stuff ;-)
+infra/kubernetes/tools.sh charts install
+# use `infra/kubernetes/tools.sh charts uninstall` to uninstall stuff ;-)
 ```
 
 Use port forward to access UI and service
