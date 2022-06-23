@@ -66,7 +66,7 @@ function install_chart() {
   #shellcheck disable=SC2207
   IFS=" " VALUES=($(detect_values_chart "$CLUSTER_NAME" "$CHART_PATH"))
   # helm install ${HELM_OPTS} --dependency-update -f "values_${CLUSTER_BASENAME}.yaml" -f "values_${CLUSTER_NAME}.yaml" "${CHART_INSTALL_NAME}" .
-  # helm dependency update .
+  cmd helm dependency update "$CHART_PATH"
   cmd "helm" "upgrade" "--install" "--cleanup-on-fail" "${HELM_OPTS[@]}" "${VALUES[@]}" "$CHART_INSTALL_NAME" "$CHART_PATH"
 }
 
@@ -132,10 +132,13 @@ charts() {
 
   # helm repo add grafana https://grafana.github.io/helm-charts
   # helm search repo grafana/ # to list all version available
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio" "minio"
-  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
+  # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
+  # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "prometheus" "prometheus"
+  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "kube-prometheus-stack" "kube-prometheus-stack"
 }
 
 foo() {

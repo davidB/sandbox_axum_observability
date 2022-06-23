@@ -1,0 +1,6 @@
+kube-prometheus-stack:
+  grafana:
+    # grafana is deployed via an other way
+    enabled: true
+    forceDeployDatasources: true
+    forceDeployDashboards: true

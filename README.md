@@ -152,11 +152,17 @@ The setup of the infrastructure (cluster) defined under `/infra`.
 #### Main components for the infra
 
 - [x] [Grafana | Grafana Labs](https://grafana.com/oss/grafana/) for dashboard and integration of log, trace, metrics
+  - artifacthub.io : [grafana 6.31.0 · grafana/grafana](https://artifacthub.io/packages/helm/grafana/grafana)
 - [x] [Grafana Tempo | Grafana Labs](https://grafana.com/oss/tempo/) to store trace
 - [ ] [Grafana Loki | Grafana Labs](https://grafana.com/oss/loki/) to store log
 - [ ] [Prometheus - Monitoring system & time series database](https://prometheus.io/) to store metrics
+  - artifacthub.io : [prometheus 15.10.1 · prometheus/prometheus-community](https://artifacthub.io/packages/helm/prometheus-community/prometheus)
+- [x] [prometheus-operator/kube-prometheus: Use Prometheus to monitor Kubernetes and applications running on Kubernetes](https://github.com/prometheus-operator/kube-prometheus), a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
+  - artifacthub.io :[kube-prometheus-stack 36.2.0 · prometheus/prometheus-community](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack))
+  - provide(by default, see doc): grafana, prometheus-operator, prometheus, alertnamaner, node-exporter
 - [ ] [Linkerd](https://linkerd.io/) a service-mesh but used for its observability feature
-- [ ] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to easily portable for kind, minikube, k3d, k3s,...
+- [x] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to easily portable for kind, minikube, k3d, k3s,...
+- [ ] Additional dashboards, alerts,... installed via grafana's sidecars
 
 #### Infra setup
 
@@ -168,11 +174,46 @@ infra/kubernetes/tools.sh charts install
 # use `infra/kubernetes/tools.sh charts uninstall` to uninstall stuff ;-)
 ```
 
+sample list of components
+
+```sh
+❯ kubectl get services -A
+NAMESPACE               NAME                                               TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                                 AGE
+default                 kubernetes                                         ClusterIP      10.43.0.1       <none>         443/TCP                                 32d
+kube-system             kube-dns                                           ClusterIP      10.43.0.10      <none>         53/UDP,53/TCP,9153/TCP                  32d
+kube-system             metrics-server                                     ClusterIP      10.43.183.187   <none>         443/TCP                                 32d
+app                     app                                                ClusterIP      10.43.130.30    <none>         80/TCP                                  11d
+minio                   minio                                              ClusterIP      10.43.225.91    <none>         9000/TCP,9001/TCP                       4d5h
+tempo                   tempo-tempo-distributed-gossip-ring                ClusterIP      None            <none>         7946/TCP                                4d5h
+tempo                   tempo-tempo-distributed-query-frontend-discovery   ClusterIP      None            <none>         3100/TCP,9095/TCP,16686/TCP,16687/TCP   4d5h
+tempo                   tempo-tempo-distributed-memcached                  ClusterIP      10.43.144.193   <none>         11211/TCP,9150/TCP                      4d5h
+tempo                   tempo-tempo-distributed-query-frontend             ClusterIP      10.43.105.209   <none>         3100/TCP,9095/TCP,16686/TCP,16687/TCP   4d5h
+tempo                   tempo-tempo-distributed-ingester                   ClusterIP      10.43.105.220   <none>         3100/TCP,9095/TCP                       4d5h
+tempo                   tempo-tempo-distributed-compactor                  ClusterIP      10.43.12.198    <none>         3100/TCP                                4d5h
+tempo                   tempo-tempo-distributed-distributor                ClusterIP      10.43.28.241    <none>         3100/TCP,9095/TCP,14268/TCP             4d5h
+tempo                   tempo-tempo-distributed-querier                    ClusterIP      10.43.159.112   <none>         3100/TCP,9095/TCP                       4d5h
+kube-system             traefik                                            LoadBalancer   10.43.8.81      192.168.5.15   80:31005/TCP,443:31787/TCP              32d
+kube-system             kube-prometheus-stack-kube-controller-manager      ClusterIP      None            <none>         10257/TCP                               21m
+kube-system             kube-prometheus-stack-kube-scheduler               ClusterIP      None            <none>         10251/TCP                               21m
+kube-system             kube-prometheus-stack-kube-etcd                    ClusterIP      None            <none>         2379/TCP                                21m
+kube-system             kube-prometheus-stack-coredns                      ClusterIP      None            <none>         9153/TCP                                21m
+kube-system             kube-prometheus-stack-kube-proxy                   ClusterIP      None            <none>         10249/TCP                               21m
+kube-prometheus-stack   kube-prometheus-stack-prometheus                   ClusterIP      10.43.219.38    <none>         9090/TCP                                21m
+kube-prometheus-stack   kube-prometheus-stack-operator                     ClusterIP      10.43.56.123    <none>         443/TCP                                 21m
+kube-prometheus-stack   kube-prometheus-stack-kube-state-metrics           ClusterIP      10.43.2.84      <none>         8080/TCP                                21m
+kube-prometheus-stack   kube-prometheus-stack-prometheus-node-exporter     ClusterIP      10.43.99.70     <none>         9100/TCP                                21m
+kube-system             kube-prometheus-stack-kubelet                      ClusterIP      None            <none>         10250/TCP,10255/TCP,4194/TCP            21m
+kube-prometheus-stack   prometheus-operated                                ClusterIP      None            <none>         9090/TCP                                21m
+kube-prometheus-stack   kube-prometheus-stack-grafana                      ClusterIP      10.43.104.191   <none>         80/TCP                                  29s
+kube-prometheus-stack   kube-prometheus-stack-alertmanager                 ClusterIP      10.43.210.189   <none>         9093/TCP                                29s
+kube-prometheus-stack   alertmanager-operated                              ClusterIP      None            <none>         9093/TCP,9094/TCP,9094/UDP              29s                       0/1     ImagePullBackOff   5 (11d ago)     11d
+```
+
 Use port forward to access UI and service
 
 ```sh
 # access grafana UI on http://127.0.0.1:8040
-kubectl port-forward -n grafana service/grafana 8040:service
+kubectl port-forward -n grafana service/grafana 8040:80
 
 # access minio UI on http://127.0.0.1:8041
 kubectl port-forward -n minio service/minio 8041:console

@@ -1,10 +1,10 @@
 apiVersion: v2
-name: grafana-tempo
-description: A Custom chart for grafana-tempo
+name: grafana
+description: An adapter chart for grafana
 type: application
-version: 0.1.0
-appVersion: "8.4.6"
+version: 6.31.0
+appVersion: "9.0.1"
 dependencies:
   - name: "grafana"
-    version: "~6.26.5" # appVersion 8.4.6
+    version: "6.31.0"
     repository: "https://grafana.github.io/helm-charts"

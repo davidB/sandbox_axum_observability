@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kube-prometheus-stack
+description: An adapter chart for kube-prometheus-stack
+type: application
+version: 36.2.0
+appVersion: "0.57.0"
+dependencies:
+  - name: "kube-prometheus-stack"
+    version: "36.2.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
