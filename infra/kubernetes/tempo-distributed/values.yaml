@@ -1,0 +1,28 @@
+tempo-distributed:
+  ingester:
+    autoscaling:
+      enabled: true
+  metricsGenerator:
+    enabled: true
+  compactor:
+    config:
+      compaction:
+        block_retention: 1440h
+  traces:
+    # jaeger:
+    #   thriftHttp: true
+    otlp:
+      grpc:
+        enabled: true
+  # see https://grafana.com/docs/tempo/latest/configuration/#storage
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: tempo
+        endpoint: minio.minio.svc.cluster.local:9000
+        access_key: tempo
+        secret_key: supersecret
+        insecure: true
+      wal:
+        path: /var/tempo/wal

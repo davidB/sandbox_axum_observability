@@ -24,20 +24,7 @@ grafana:
 
   # datasources:
   #   datasources.yaml:
-  #     apiVersion: 1
 
-  #     datasources:
-  #       - name: Tempo
-  #         type: tempo
-  #         access: proxy
-  #         orgId: 1
-  #         url: http://tempo-tempo-distributed-query-frontend:3100
-  #         basicAuth: false
-  #         isDefault: true
-  #         version: 1
-  #         editable: false
-  #         apiVersion: 1
-  #         uid: tempo
   ## Timezone for the default dashboards
   ## Other options are: browser or a specific timezone, i.e. Europe/Luxembourg
   ##
