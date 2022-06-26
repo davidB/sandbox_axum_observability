@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: '{{ .Release.Name }}-grafana-datasource'
+  labels:
+    app: '{{ .Release.Name }}'
+    grafana_datasource: "1"
+data:
+  loki-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        uid: loki
+        version: 1
+        editable: false
+        apiVersion: 1
+        access: server
+        orgId: 1
+        url: http://{{(include "loki.gatewayFullname" .)}}.{{ .Release.Namespace }}.svc.{{ (index .Values "loki-distributed").global.clusterDomain }}:80
+        isDefault: false
+        jsonData:
+          maxLines: 100

@@ -138,6 +138,8 @@ charts() {
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "kube-prometheus-stack" "kube-prometheus-stack"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "tempo-distributed" "tempo-distributed"
+  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "loki-distributed" "loki-distributed"
+  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "promtail" "promtail"
 }
 
 foo() {

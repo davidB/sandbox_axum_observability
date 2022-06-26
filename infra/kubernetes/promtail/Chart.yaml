@@ -1,0 +1,10 @@
+apiVersion: v2
+name: promtail
+description: An adapter chart for grafana promtail
+type: application
+version: 6.0.0
+appVersion: "2.5.0"
+dependencies:
+  - name: "promtail"
+    version: "6.0.0"
+    repository: "https://grafana.github.io/helm-charts"

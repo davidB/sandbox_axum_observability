@@ -1,0 +1,41 @@
+# TODO create alert rule in grafana for loki (idea: port from ruler/alertmanager)
+# see values.yaml of loki chart and https://grafana.com/docs/loki/latest/rules/
+
+loki-distributed:
+  rbac:
+    pspEnabled: false
+  loki:
+    # -- Check https://grafana.com/docs/loki/latest/configuration/#schema_config for more info on how to configure schemas
+    schemaConfig:
+      configs:
+        - from: 2020-09-07
+          store: boltdb-shipper
+          object_store: s3
+          schema: v11
+          index:
+            prefix: loki_index_
+            period: 24h
+
+    # -- Check https://grafana.com/docs/loki/latest/configuration/#storage_config for more info on how to configure storages
+    storageConfig:
+      boltdb_shipper:
+        shared_store: s3
+        active_index_directory: /var/loki/index
+        cache_location: /var/loki/cache
+        cache_ttl: 168h
+      # https://grafana.com/docs/loki/latest/configuration/#storage_config
+      # https://grafana.com/docs/loki/latest/configuration/#s3_storage_config
+      aws:
+        s3: http://tempo:supersecret@minio.minio.svc.cluster.local:9000/loki
+        # bucketnames: loki
+        # endpoint: minio.minio.svc.cluster.local:9000
+        # access_key_id: tempo
+        # secret_access_key: supersecret
+        insecure: true
+        s3forcepathstyle: true
+      # s3:
+      #   bucket: loki
+      #   endpoint: minio.minio.svc.cluster.local:9000
+      #   access_key: tempo
+      #   secret_key: supersecret
+      #   insecure: true

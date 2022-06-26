@@ -143,24 +143,31 @@ Open your browser to grafana explorer [http://localhost:3000/explore](http://loc
 
 ### Kubernetes
 
-The setup of the infrastructure (cluster) defined under `/infra`.
+The setup of the infrastructure (cluster) defined under `/infra/kubernetes`.
 
-- Try to be more like a target / live environment, so use distributed solution and a S3 backend (minio). So require more resources on local than using "local dev approach"
-- Setup of grafana and tempo is based on [tempo/example/helm at main · grafana/tempo](https://github.com/grafana/tempo/tree/main/example/helm), in distributed mode (consume more resources, aka several pods) and setup to use minio as S3 store. To be more like a target environment
+- Try to be more like a target / live environment, so it requires more resources on local than using "local dev approach":
+  - use distributed solution (loki, tempo,...)
+  - use S3 backend (minio).
 - no ingress or api gateway setup, access will be via port forward
+- use wrapper/adapter helm chart to install components, like if it is deployed by a gitops (pull mode) system
+- keep components separated to allow partial reuse and to identify integration point
 
 #### Main components for the infra
 
-- [x] [Grafana | Grafana Labs](https://grafana.com/oss/grafana/) for dashboard and integration of log, trace, metrics
+- [x] [Grafana](https://grafana.com/oss/grafana/) for dashboard and integration of log, trace, metrics
   - artifacthub.io : [grafana 6.31.0 · grafana/grafana](https://artifacthub.io/packages/helm/grafana/grafana)
-- [x] [Grafana Tempo | Grafana Labs](https://grafana.com/oss/tempo/) to store trace
+  - enable sidecars, to allow other components to register datasources, dashboards, notifiers, alerts
+- [x] [Grafana Tempo](https://grafana.com/oss/tempo/) to store trace
   - artifacthub.io: [tempo-distributed 0.20.2 · grafana/grafana](https://artifacthub.io/packages/helm/grafana/tempo-distributed)
-- [ ] [Grafana Loki | Grafana Labs](https://grafana.com/oss/loki/) to store log
+  - Setup of tempo is based on [tempo/example/helm at main · grafana/tempo](https://github.com/grafana/tempo/tree/main/example/helm), in distributed mode (consume more resources, aka several pods)
+- [x] [Grafana Loki](https://grafana.com/oss/loki/) to store log
+- [x] [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) as log collector (also provide by Grafana)
+  - artifacthub.io: [promtail 6.0.0 · grafana/grafana](https://artifacthub.io/packages/helm/grafana/promtail)
 - [x] [prometheus-operator/kube-prometheus: Use Prometheus to monitor Kubernetes and applications running on Kubernetes](https://github.com/prometheus-operator/kube-prometheus), a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
   - artifacthub.io :[kube-prometheus-stack 36.2.0 · prometheus/prometheus-community](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack))
   - provide(by default, see doc): grafana, prometheus-operator, prometheus, alertnamaner, node-exporter
 - [ ] [Linkerd](https://linkerd.io/) a service-mesh but used for its observability feature
-- [x] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to easily portable for kind, minikube, k3d, k3s,...
+- [x] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to be easily portable for kind, minikube, k3d, k3s,...
 - [ ] Additional dashboards, alerts,... installed via grafana's sidecars
 
 #### Infra setup
@@ -172,6 +179,8 @@ Require: `kubectl`, `helm` v3
 infra/kubernetes/tools.sh charts install
 # use `infra/kubernetes/tools.sh charts uninstall` to uninstall stuff ;-)
 ```
+
+- manual creation of `loki` bucket
 
 sample list of components
 

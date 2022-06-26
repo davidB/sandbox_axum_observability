@@ -6,17 +6,17 @@ metadata:
     app: '{{ .Release.Name }}'
     grafana_datasource: '1'
 data:
-  datasource.yaml: |-
+  tempo-datasource.yaml: |-
     apiVersion: 1
     datasources:
       - name: Tempo
         type: tempo
+        uid: tempo
+        version: 1
+        editable: false
+        apiVersion: 1
         access: server
         orgId: 1
         url: http://{{ include "tempo.queryFrontendFullname" . }}.{{ .Release.Namespace }}.svc.{{ (index .Values "tempo-distributed").global.clusterDomain }}:3100
         basicAuth: false
         isDefault: false
-        version: 1
-        editable: false
-        apiVersion: 1
-        uid: tempo
