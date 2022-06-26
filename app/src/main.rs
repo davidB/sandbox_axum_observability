@@ -14,7 +14,7 @@ use serde_json::json;
 use std::net::SocketAddr;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
-// use tracing::warn;
+use tracing::info;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -212,6 +212,7 @@ async fn simulation_depth(
 async fn fake_job(duration_level_max: f32) {
     let mut rng: StdRng = SeedableRng::from_entropy();
     let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
+    info!(duration=?duration, "sample log with a value");
     tokio::time::sleep(duration).await
 }
 

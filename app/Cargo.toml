@@ -1,6 +1,6 @@
 [package]
 name = "example-opentelemetry"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 publish = false
 
@@ -42,10 +42,6 @@ assert2 = "0.3.6"
 mime = "0.3"
 assert-json-diff = "2.0.1"
 hyper = { version = "0.14", features = ["full"] }
-
-[features]
-default = ["opentelemetry"]
-opentelemetry = []
 
 [profile.release]
 codegen-units = 1

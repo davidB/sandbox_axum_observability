@@ -1,0 +1,3 @@
+image:
+  repository: "app"
+  tag: "03ba336-dirty"
