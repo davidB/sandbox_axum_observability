@@ -2,28 +2,42 @@ grafana:
   rbac:
     pspEnabled: false
 
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          targetAverageUtilization: 60
+      - type: Resource
+        resource:
+          name: memory
+          targetAverageUtilization: 60
+
   env:
     GF_AUTH_ANONYMOUS_ENABLED: true
     GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     GF_AUTH_DISABLE_LOGIN_FORM: true
-    GF_FEATURE_TOGGLES_ENABLE: tempoSearch tempoBackendSearch
+    # GF_FEATURE_TOGGLES_ENABLE: tempoSearch tempoBackendSearch
 
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
+  # datasources:
+  #   datasources.yaml:
+  #     apiVersion: 1
 
-      datasources:
-        - name: Tempo
-          type: tempo
-          access: proxy
-          orgId: 1
-          url: http://tempo-tempo-distributed-query-frontend:3100
-          basicAuth: false
-          isDefault: true
-          version: 1
-          editable: false
-          apiVersion: 1
-          uid: tempo
+  #     datasources:
+  #       - name: Tempo
+  #         type: tempo
+  #         access: proxy
+  #         orgId: 1
+  #         url: http://tempo-tempo-distributed-query-frontend:3100
+  #         basicAuth: false
+  #         isDefault: true
+  #         version: 1
+  #         editable: false
+  #         apiVersion: 1
+  #         uid: tempo
   ## Timezone for the default dashboards
   ## Other options are: browser or a specific timezone, i.e. Europe/Luxembourg
   ##
@@ -31,37 +45,11 @@ grafana:
   sidecar:
     dashboards:
       enabled: true
-      # label: grafana_dashboard
-      # labelValue: "1"
-
-      multicluster:
-        global:
-          enabled: false
-        etcd:
-          enabled: false
-      provider:
-        allowUiUpdates: false
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
     datasources:
       enabled: true
-      defaultDatasourceEnabled: true
-
-      uid: prometheus
-
-      ## URL of prometheus datasource
-      ##
-      # url: http://prometheus-stack-prometheus:9090/
-
-      # If not defined, will use prometheus.prometheusSpec.scrapeInterval or its default
-      # defaultDatasourceScrapeInterval: 15s
-
-      ## Annotations for Grafana datasource configmaps
-      ##
-      annotations: {}
-
-      ## Create datasource for each Pod of Prometheus StatefulSet;
-      ## this uses headless service `prometheus-operated` which is
-      ## created by Prometheus Operator
-      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/0fee93e12dc7c2ea1218f19ae25ec6b893460590/pkg/prometheus/statefulset.go#L255-L286
-      createPrometheusReplicasDatasources: false
       label: grafana_datasource
       labelValue: "1"
+      searchNamespace: ALL

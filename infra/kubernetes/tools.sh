@@ -135,7 +135,7 @@ charts() {
   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio" "minio"
-  # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
+  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "tempo" "tempo"
   # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "prometheus" "prometheus"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "kube-prometheus-stack" "kube-prometheus-stack"
