@@ -1,4 +1,6 @@
 promtail:
   config:
+    logLevel: warn
     clients:
-      - url: http://loki-distributed-gateway.loki-distributed.svc.cluster.local:80/loki/api/v1/push
+      # see https://grafana.com/docs/loki/latest/api/#post-lokiapiv1push
+      - url: http://loki-distributed-distributor.loki-distributed.svc.cluster.local:3100/loki/api/v1/push
