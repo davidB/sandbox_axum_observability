@@ -130,11 +130,14 @@ charts() {
     ;;
   esac
 
+  helm repo add minio https://helm.min.io/
   helm repo add grafana https://grafana.github.io/helm-charts
   # helm search repo grafana/ # to list all version available
   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio" "minio"
+  # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio-operator" "minio-operator"
+  # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio-tenant-1" "minio-tenant-1"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "grafana" "grafana"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "kube-prometheus-stack" "kube-prometheus-stack"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "tempo-distributed" "tempo-distributed"

@@ -154,6 +154,8 @@ The setup of the infrastructure (cluster) defined under `/infra/kubernetes`.
 
 #### Main components for the infra
 
+- [ ] S3 buckets to store logs, metrics, traces,...
+  - [ ] Use Minio to provide S3 buckets in on desktop cluster (use a deprecated version but easier to setup than the operator)
 - [x] [Grafana](https://grafana.com/oss/grafana/) for dashboard and integration of log, trace, metrics
   - artifacthub.io : [grafana 6.31.0 · grafana/grafana](https://artifacthub.io/packages/helm/grafana/grafana)
   - enable sidecars, to allow other components to register datasources, dashboards, notifiers, alerts
@@ -169,6 +171,7 @@ The setup of the infrastructure (cluster) defined under `/infra/kubernetes`.
 - [ ] [Linkerd](https://linkerd.io/) a service-mesh but used for its observability feature
 - [x] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to be easily portable for kind, minikube, k3d, k3s,...
 - [ ] Additional dashboards, alerts,... installed via grafana's sidecars
+- [ ] Use secrets for credentials
 
 #### Infra setup
 
@@ -223,6 +226,18 @@ Use port forward to access UI and service
 # access grafana UI on http://127.0.0.1:8040
 kubectl port-forward -n grafana service/grafana 8040:80
 
-# access minio UI on http://127.0.0.1:8041
-kubectl port-forward -n minio service/minio 8041:console
+# access grafana UI on http://127.0.0.1:9000 (user/pass: minio/minio123)
+kubectl port-forward -n minio service/minio 9000:9000
+
 ```
+<!--
+# access grafana UI on https://127.0.0.1:9443
+kubectl port-forward -n minio-tenant-1 service/tenant-1-console 9443:9443
+
+# access minio Console of operator
+# - install kubectl krew (see [Installing · Krew](https://krew.sigs.k8s.io/docs/user-guide/setup/install/))
+kubectl krew install minio
+kubectl minio proxy -n minio-operator
+# console of tenant-1
+kubectl minio proxy -n minio-tenant-1
+-->

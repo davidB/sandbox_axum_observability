@@ -1,0 +1,13 @@
+minio:
+  accessKey: minio
+  secretKey: minio123
+  persistence:
+    enabled: true
+    size: 25Gi
+  buckets:
+    - name: tempo-demo-desktop
+      policy: none
+      purge: false
+    - name: loki-demo-desktop
+      policy: none
+      purge: false

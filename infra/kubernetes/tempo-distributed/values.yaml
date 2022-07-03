@@ -19,10 +19,10 @@ tempo-distributed:
     trace:
       backend: s3
       s3:
-        bucket: tempo
+        bucket: tempo-demo-desktop
         endpoint: minio.minio.svc.cluster.local:9000
-        access_key: tempo
-        secret_key: supersecret
+        access_key: minio
+        secret_key: minio123
         insecure: true
       wal:
         path: /var/tempo/wal
