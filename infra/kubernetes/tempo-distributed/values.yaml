@@ -1,7 +1,10 @@
 tempo-distributed:
   ingester:
     autoscaling:
-      enabled: true
+      enabled: false
+    replicas: 1
+    config:
+      replication_factor: 1
   metricsGenerator:
     enabled: true
   compactor:

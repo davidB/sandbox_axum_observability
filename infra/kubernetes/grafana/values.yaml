@@ -20,10 +20,7 @@ grafana:
     GF_AUTH_ANONYMOUS_ENABLED: true
     GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     GF_AUTH_DISABLE_LOGIN_FORM: true
-    # GF_FEATURE_TOGGLES_ENABLE: tempoSearch tempoBackendSearch
-
-  # datasources:
-  #   datasources.yaml:
+    GF_FEATURE_TOGGLES_ENABLE: tempoSearch tempoBackendSearch
 
   ## Timezone for the default dashboards
   ## Other options are: browser or a specific timezone, i.e. Europe/Luxembourg
