@@ -13,7 +13,7 @@ data:
         type: loki
         uid: loki
         version: 1
-        editable: true
+        editable: false
         apiVersion: 1
         access: proxy
         orgId: 1
