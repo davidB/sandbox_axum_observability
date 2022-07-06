@@ -59,7 +59,7 @@ function install_chart() {
   local CHART_NAMESPACE=${3:-}
   local CHART_INSTALL_NAME="${4:-${CHART_NAME}}"
   local CHART_PATH="${DIR}/${CHART_NAME}"
-  local HELM_OPTS=""
+  local HELM_OPTS=()
   if [ -n "${CHART_NAMESPACE}" ]; then
     HELM_OPTS=("--namespace" "${CHART_NAMESPACE}" "--create-namespace")
   fi
@@ -67,7 +67,7 @@ function install_chart() {
   IFS=" " VALUES=($(detect_values_chart "$CLUSTER_NAME" "$CHART_PATH"))
   # helm install ${HELM_OPTS} --dependency-update -f "values_${CLUSTER_BASENAME}.yaml" -f "values_${CLUSTER_NAME}.yaml" "${CHART_INSTALL_NAME}" .
   cmd helm dependency update "$CHART_PATH"
-  cmd "helm" "upgrade" "--install" "--cleanup-on-fail" "${HELM_OPTS[@]}" "${VALUES[@]}" "$CHART_INSTALL_NAME" "$CHART_PATH"
+  cmd "helm" "upgrade" "$CHART_INSTALL_NAME" "$CHART_PATH" "--install" "--cleanup-on-fail" "${VALUES[@]}" "${HELM_OPTS[@]}"
 }
 
 function uninstall_chart() {
@@ -130,10 +130,10 @@ charts() {
     ;;
   esac
 
-  helm repo add minio https://helm.min.io/
-  helm repo add grafana https://grafana.github.io/helm-charts
+  # helm repo add minio-legacy https://helm.min.io/
+  # helm repo add grafana https://grafana.github.io/helm-charts
   # helm search repo grafana/ # to list all version available
-  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  # helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio" "minio"
   # "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "minio-operator" "minio-operator"
@@ -143,6 +143,44 @@ charts() {
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "tempo-distributed" "tempo-distributed"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "loki-distributed" "loki-distributed"
   "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "promtail" "promtail"
+  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "linkerd" "linkerd"
+  "${SUB_CMD}_chart" "${CURRENT_CLUSTER_NAME}" "linkerd-viz" "linkerd-viz"
+
+  # kubectl annotate namespace grafana "linkerd.io/inject=enabled" --overwrite
+  # kubectl annotate namespace app "linkerd.io/inject=enabled" --overwrite
+}
+
+gen_certs() {
+  CERT_DIR="${DIR}/linkerd/certs/"
+  mkdir -p CERT_DIR || true
+  pushd "$CERT_DIR"
+  CERT_FILE="${CERT_DIR}/ca.crt"
+  CMD=$(command -v step-cli || command -v step)
+  if [ ! -f "${CERT_FILE}" ]; then
+    echo "-- create tls config ca"
+    "$CMD" certificate create root.linkerd.cluster.local ca.crt ca.key \
+      --profile root-ca \
+      --no-password \
+      --not-after 43800h \
+      --insecure
+  fi
+  # shellcheck disable=SC2086
+  yq eval -i ".linkerd2.identityTrustAnchorsPEM = \"$(cat ${CERT_FILE})\"" "${DIR}/linkerd/values.yaml"
+
+  CERT_FILE="${DIR}/issuer.crt"
+  if [ ! -f "${CERT_FILE}" ]; then
+    echo "-- create tls config issuer"
+    "$CMD" certificate create identity.linkerd.cluster.local issuer.crt issuer.key \
+      --profile intermediate-ca \
+      --not-after 8760h \
+      --no-password \
+      --insecure \
+      --ca ca.crt --ca-key ca.key
+  fi
+  # shellcheck disable=SC2086
+  yq eval -i ".linkerd2.identity.issuer.tls.crtPEM = \"$(cat ${CERT_DIR}/issuer.crt)\"" "${DIR}/linkerd/values.yaml"
+  # shellcheck disable=SC2086
+  yq eval -i ".linkerd2.identity.issuer.tls.keyPEM = \"$(cat ${CERT_DIR}/issuer.key)\"" "${DIR}/linkerd/values.yaml"
 }
 
 foo() {

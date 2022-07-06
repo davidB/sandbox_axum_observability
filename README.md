@@ -13,6 +13,7 @@ Sandbox I used to experiment [axum] and observability (for target platform), obs
   - [Kubernetes](#kubernetes)
     - [Main components for the infra](#main-components-for-the-infra)
     - [Infra setup](#infra-setup)
+    - [Links & inspiration](#links--inspiration)
 
 ## App (Rust http service)
 
@@ -229,6 +230,8 @@ kubectl port-forward -n grafana service/grafana 8040:80
 # access grafana UI on http://127.0.0.1:9000 (user/pass: minio/minio123)
 kubectl port-forward -n minio service/minio 9000:9000
 
+# access linerd-viz UI on http://127.0.0.1:8084
+kubectl port-forward -n linkerd-viz service/web 8084:8084
 ```
 <!--
 # access grafana UI on https://127.0.0.1:9443
@@ -241,3 +244,13 @@ kubectl minio proxy -n minio-operator
 # console of tenant-1
 kubectl minio proxy -n minio-tenant-1
 -->
+
+Setup the app and call it
+
+```sh
+kubectl port-forward -n app service/app 8080:80
+curl -i "http://localhost:8080/depth/2"
+
+#### Links & inspiration
+
+- [tempo/integration/microservices at main · grafana/tempo](https://github.com/grafana/tempo/tree/main/integration/microservices)

@@ -1,0 +1,12 @@
+# see
+# - https://artifacthub.io/packages/helm/linkerd2/linkerd2
+apiVersion: v2
+name: linkerd
+description: An adapter chart for linkerd
+type: application
+version: 2.11.2
+appVersion: "2.11.2"
+dependencies:
+  - name: "linkerd2"
+    version: "2.11.2"
+    repository: "https://helm.linkerd.io/stable"

@@ -1,0 +1,21 @@
+linkerd2:
+  installNamespace: true
+  identityTrustAnchorsPEM: "-----BEGIN CERTIFICATE-----\nMIIBjTCCATOgAwIBAgIQS9XnQC869csvcRaottyI9jAKBggqhkjOPQQDAjAlMSMw\nIQYDVQQDExpyb290LmxpbmtlcmQuY2x1c3Rlci5sb2NhbDAeFw0yMjA3MDMxOTEw\nMDVaFw0yNzA3MDIxOTEwMDVaMCUxIzAhBgNVBAMTGnJvb3QubGlua2VyZC5jbHVz\ndGVyLmxvY2FsMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEF4yCNhTE2iJuIuy6\nSvm3/5YqnvDdHbzQjyau5H0l9OeDCy1YxazikXBsivos48WtaeBKXbWQqoNE+XiT\n/5KTZaNFMEMwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQEwHQYD\nVR0OBBYEFM9JHdGAQ80r8aChvodHZZGqhBNoMAoGCCqGSM49BAMCA0gAMEUCIBUV\nFJqxGwH1el9BvkKm20kd4GWoeLdL8dETI6g/kaw3AiEAtga2r+0Sdi5T4Gfpex1O\nfjB9KBSHShQBn0pJ6k3oVF4=\n-----END CERTIFICATE-----"
+  identity:
+    issuer:
+      scheme: linkerd.io/tls
+      tls:
+        keyPEM: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIGmbCI010XzbnnhX452y3fQ4VvRDO1d2z/bWCg9K0RtGoAoGCCqGSM49\nAwEHoUQDQgAEXng+1r7opeQ9Q+X6cEj24JLW5MXyg7rOQPttaxDvaeI1+zdvdTrO\nqMspppmCVEXVJ/+QS+zf1yLU4PAk5x8hbQ==\n-----END EC PRIVATE KEY-----"
+        crtPEM: |-
+          -----BEGIN CERTIFICATE-----
+          MIIBszCCAVmgAwIBAgIRAKmmNdlOSBnU7nCXqwYPpRMwCgYIKoZIzj0EAwIwJTEj
+          MCEGA1UEAxMacm9vdC5saW5rZXJkLmNsdXN0ZXIubG9jYWwwHhcNMjIwNzAzMTkx
+          NDQ3WhcNMjMwNzAzMTkxNDQ3WjApMScwJQYDVQQDEx5pZGVudGl0eS5saW5rZXJk
+          LmNsdXN0ZXIubG9jYWwwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAReeD7Wvuil
+          5D1D5fpwSPbgktbkxfKDus5A+21rEO9p4jX7N291Os6oyymmmYJURdUn/5BL7N/X
+          ItTg8CTnHyFto2YwZDAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIB
+          ADAdBgNVHQ4EFgQUs3SDXz4kQqd+shZOdmlzrCYvTiwwHwYDVR0jBBgwFoAUz0kd
+          0YBDzSvxoKG+h0dlkaqEE2gwCgYIKoZIzj0EAwIDSAAwRQIgSvg0pzexkA7Zra/A
+          byy3X9i/uWfIIVCwSRlZdJVfTY4CIQDJWqy4D6xMC/VWTKOTqbvNMXZYDa7mbnZo
+          in/R9Ck/sQ==
+          -----END CERTIFICATE-----
