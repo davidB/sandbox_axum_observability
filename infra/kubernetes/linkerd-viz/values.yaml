@@ -10,6 +10,8 @@ linkerd-viz:
   grafanaUrl: http://grafana.grafana:80/
   grafana:
     enabled: false
+    uidPrefix: "demo-desktop"
+    # externalUrl: http://localhost:80/
 
 # copied from https://raw.githubusercontent.com/linkerd/linkerd2/main/grafana/values.yaml
 # but the download of the file , to then used by configmap is done by an external script

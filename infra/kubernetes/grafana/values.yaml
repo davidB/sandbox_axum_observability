@@ -1,4 +1,8 @@
 grafana:
+  # grafana.ini:
+  #   server:
+  #     root_url: "%(protocol)s://%(domain)s:/grafana/"
+
   rbac:
     pspEnabled: false
 
