@@ -1,0 +1,20 @@
+# see
+# - [Helm | cert-manager](https://cert-manager.io/docs/installation/helm/)
+# - https://artifacthub.io/packages/helm/cert-manager/cert-manager
+apiVersion: v2
+name: cert-manager
+description: An adapter chart for cert-manager
+type: application
+version: "1.8.2"
+appVersion: "1.8.2"
+home: https://cert-manager.io/
+sources:
+  - https://artifacthub.io/packages/helm/cert-manager/cert-manager
+  - https://github.com/cert-manager/cert-manager
+dependencies:
+  # see https://cert-manager.io/docs/installation/supported-releases/
+  - name: "cert-manager"
+    version: "v1.8.2"
+    repository: "https://charts.jetstack.io"
+    alias: cert-manager
+    condition: cert-manager.enabled

@@ -176,12 +176,21 @@ The setup of the infrastructure (cluster) defined under `/infra/kubernetes`.
 
 #### Infra setup
 
-Require: `kubectl`, `helm` v3
+Require:
+- `kubectl`, `helm` v3,
+-  `nushell`, to use `tools.nu` and avoid to chain command
 
-```sh
+```nushell
+# launch nushell
+nu
 # after launch of your local (or remote) cluster, configure kubectl to access it as current context
-infra/kubernetes/tools.sh charts install
-# use `infra/kubernetes/tools.sh charts uninstall` to uninstall stuff ;-)
+cd infra/kubernetes
+use tools.nu
+tools install_all_charts
+# to uninstall stuff ;-)
+tools uninstall_all_charts
+# to have the list of subcommand
+tools <tab>
 ```
 
 - manual creation of `loki` bucket

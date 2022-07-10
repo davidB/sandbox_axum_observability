@@ -1,0 +1,11 @@
+collector:
+  mode: daemonset
+  config:
+    exporters:
+      otlp:
+        endpoint: tempo-distributed-distributor.tempo-distributed:4317
+
+opentelemetry-operator:
+  admissionWebhooks:
+    certManager:
+      enabled: true

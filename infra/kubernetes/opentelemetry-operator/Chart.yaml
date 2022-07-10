@@ -1,0 +1,16 @@
+apiVersion: v2
+name: opentelemetry-operator
+description: An adapter chart for opentelemetry operator
+type: application
+version: "0.8.15"
+appVersion: "0.53.0"
+home: https://opentelemetry.io/
+sources:
+  - https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-operator
+  - https://github.com/open-telemetry/opentelemetry-operator
+  - https://github.com/open-telemetry/opentelemetry-helm-charts
+icon: https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png
+dependencies:
+  - name: "opentelemetry-operator"
+    version: "0.8.15"
+    repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
