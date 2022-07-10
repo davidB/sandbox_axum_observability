@@ -1,0 +1,15 @@
+# see
+# - [Installing Linkerd with Helm | Linkerd](https://linkerd.io/2.11/tasks/install-helm/)
+# - [Using GitOps with Linkerd with Argo CD | Linkerd](https://linkerd.io/2.11/tasks/gitops/)
+# - [Automatically Rotating Webhook TLS Credentials | Linkerd](https://linkerd.io/2.11/tasks/automatically-rotating-webhook-tls-credentials/)
+# - https://artifacthub.io/packages/helm/linkerd2/linkerd-jaeger
+apiVersion: v2
+name: linkerd-jaeger
+description: An adapter chart for linkerd-jaeger (disable jaeger and enable otlp collector)
+type: application
+version: 2.11.3
+appVersion: "2.11.3"
+dependencies:
+  - name: "linkerd-jaeger"
+    version: "2.11.3"
+    repository: "https://helm.linkerd.io/stable"

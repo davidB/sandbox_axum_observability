@@ -1,0 +1,11 @@
+linkerd-jaeger:
+  installNamespace: true
+  jaeger:
+    # We don't need the Jaeger, we'll just use Tempo + Grafana
+    enabled: false
+  collector:
+    # We used  opentelemetry operator to deploy the collector
+    enabled: false
+  webhook:
+    collectorSvcAddr: "opentelemetry-collector.opentelemetry-collector:55678" #jaeger (or opencensus)
+    # collectorSvcAccount: ???

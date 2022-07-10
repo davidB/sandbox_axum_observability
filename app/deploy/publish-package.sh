@@ -13,7 +13,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &>/dev/null && pwd)"
 APP_NAME=${1:-$(basename "${PROJECT_DIR}")}
 IMAGE_TAG=${2:-$(git describe --always --dirty)}
 IMAGE_REPOSITORY="${APP_NAME}"
-IMAGE_FULL_TAG="k8s.io/${IMAGE_REPOSITORY}:${IMAGE_TAG}"
+IMAGE_FULL_TAG="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 
 find_image_builder() {
   if [ -x "$(command -v nerdctl)" ]; then

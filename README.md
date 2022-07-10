@@ -169,16 +169,25 @@ The setup of the infrastructure (cluster) defined under `/infra/kubernetes`.
 - [x] [prometheus-operator/kube-prometheus: Use Prometheus to monitor Kubernetes and applications running on Kubernetes](https://github.com/prometheus-operator/kube-prometheus), a collection of Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.
   - artifacthub.io :[kube-prometheus-stack 36.2.0 · prometheus/prometheus-community](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack))
   - provide(by default, see doc): grafana, prometheus-operator, prometheus, alertnamaner, node-exporter
-- [ ] [Linkerd](https://linkerd.io/) a service-mesh but used for its observability feature
+- [x] [Linkerd](https://linkerd.io/) a service-mesh but used for its observability feature
+- [x] [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) as collector for traces
+  - artifacthub.io: [opentelemetry-collector 0.22.0 · opentelemetry/opentelemetry-helm](https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-collector)
+  - alternatives: grafana agent, send directly to tempo, use the collector from linkerd-jaeger
+  - [ ] TODO: use opentelemetry operator (currently some issue with port)
 - [x] [Rancher Desktop](https://rancherdesktop.io/) as kubernetes cluster for local test, but I hope the code to be easily portable for kind, minikube, k3d, k3s,...
 - [ ] Additional dashboards, alerts,... installed via grafana's sidecars
 - [ ] Use secrets for credentials
 
 #### Infra setup
 
-Require:
-- `kubectl`, `helm` v3,
--  `nushell`, to use `tools.nu` and avoid to chain command
+Required:
+
+- `kubectl`, `helm` v3 : to manage the k8s cluster
+
+Optional:
+
+- `nushell`: to use `tools.nu` and to avoid too many manual commands
+- Lens / OpenLens / k9s / your favorite UI: to explore states of k8s cluster
 
 ```nushell
 # launch nushell
@@ -199,35 +208,58 @@ sample list of components
 
 ```sh
 ❯ kubectl get service -A
-NAMESPACE               NAME                                             TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                                 AGE
-default                 kubernetes                                       ClusterIP      10.43.0.1       <none>         443/TCP                                 34d
-kube-system             kube-dns                                         ClusterIP      10.43.0.10      <none>         53/UDP,53/TCP,9153/TCP                  34d
-kube-system             metrics-server                                   ClusterIP      10.43.183.187   <none>         443/TCP                                 34d
-app                     app                                              ClusterIP      10.43.130.30    <none>         80/TCP                                  13d
-kube-system             kube-prometheus-stack-kubelet                    ClusterIP      None            <none>         10250/TCP,10255/TCP,4194/TCP            2d14h
-minio                   minio                                            ClusterIP      10.43.250.124   <none>         9000/TCP,9001/TCP                       15h
-grafana                 grafana                                          ClusterIP      10.43.82.133    <none>         80/TCP                                  15h
-kube-system             kube-prometheus-stack-kube-scheduler             ClusterIP      None            <none>         10251/TCP                               15h
-kube-prometheus-stack   kube-prometheus-stack-operator                   ClusterIP      10.43.30.109    <none>         443/TCP                                 15h
-kube-system             kube-prometheus-stack-coredns                    ClusterIP      None            <none>         9153/TCP                                15h
-kube-system             kube-prometheus-stack-kube-proxy                 ClusterIP      None            <none>         10249/TCP                               15h
-kube-system             kube-prometheus-stack-kube-controller-manager    ClusterIP      None            <none>         10257/TCP                               15h
-kube-prometheus-stack   kube-prometheus-stack-prometheus-node-exporter   ClusterIP      10.43.63.240    <none>         9100/TCP                                15h
-kube-prometheus-stack   kube-prometheus-stack-alertmanager               ClusterIP      10.43.167.7     <none>         9093/TCP                                15h
-kube-prometheus-stack   kube-prometheus-stack-kube-state-metrics         ClusterIP      10.43.160.139   <none>         8080/TCP                                15h
-kube-prometheus-stack   kube-prometheus-stack-prometheus                 ClusterIP      10.43.241.211   <none>         9090/TCP                                15h
-kube-prometheus-stack   alertmanager-operated                            ClusterIP      None            <none>         9093/TCP,9094/TCP,9094/UDP              15h
-kube-prometheus-stack   prometheus-operated                              ClusterIP      None            <none>         9090/TCP                                15h
-kube-system             traefik                                          LoadBalancer   10.43.8.81      192.168.5.15   80:31005/TCP,443:31787/TCP              34d
-tempo-distributed       tempo-distributed-gossip-ring                    ClusterIP      None            <none>         7946/TCP                                49m
-tempo-distributed       tempo-distributed-query-frontend-discovery       ClusterIP      None            <none>         3100/TCP,9095/TCP,16686/TCP,16687/TCP   49m
-tempo-distributed       tempo-distributed-distributor                    ClusterIP      10.43.5.138     <none>         3100/TCP,9095/TCP,4317/TCP,55680/TCP    49m
-tempo-distributed       tempo-distributed-querier                        ClusterIP      10.43.153.8     <none>         3100/TCP,9095/TCP                       49m
-tempo-distributed       tempo-distributed-memcached                      ClusterIP      10.43.126.207   <none>         11211/TCP,9150/TCP                      49m
-tempo-distributed       tempo-distributed-ingester                       ClusterIP      10.43.21.84     <none>         3100/TCP,9095/TCP                       49m
-tempo-distributed       tempo-distributed-metrics-generator              ClusterIP      10.43.112.71    <none>         9095/TCP,3100/TCP                       49m
-tempo-distributed       tempo-distributed-compactor                      ClusterIP      10.43.218.46    <none>         3100/TCP                                49m
-tempo-distributed       tempo-distributed-query-frontend                 ClusterIP      10.43.35.103    <none>         3100/TCP,9095/TCP,16686/TCP,16687/TCP   49m   34d
+NAMESPACE                 NAME                                             TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                                                   AGE
+default                   kubernetes                                       ClusterIP      10.43.0.1       <none>         443/TCP                                                   95m
+kube-system               kube-dns                                         ClusterIP      10.43.0.10      <none>         53/UDP,53/TCP,9153/TCP                                    95m
+kube-system               metrics-server                                   ClusterIP      10.43.155.46    <none>         443/TCP                                                   95m
+kube-system               traefik                                          LoadBalancer   10.43.205.20    192.168.5.15   80:30073/TCP,443:31505/TCP                                95m
+cert-manager              cert-manager-webhook                             ClusterIP      10.43.208.146   <none>         443/TCP                                                   94m
+cert-manager              cert-manager                                     ClusterIP      10.43.60.191    <none>         9402/TCP                                                  94m
+minio                     minio                                            ClusterIP      10.43.19.151    <none>         9000/TCP                                                  94m
+grafana                   grafana                                          ClusterIP      10.43.171.106   <none>         80/TCP                                                    93m
+kube-system               kube-prometheus-stack-kube-scheduler             ClusterIP      None            <none>         10251/TCP                                                 93m
+kube-system               kube-prometheus-stack-coredns                    ClusterIP      None            <none>         9153/TCP                                                  93m
+kube-system               kube-prometheus-stack-kube-proxy                 ClusterIP      None            <none>         10249/TCP                                                 93m
+kube-system               kube-prometheus-stack-kube-controller-manager    ClusterIP      None            <none>         10257/TCP                                                 93m
+kube-system               kube-prometheus-stack-kube-etcd                  ClusterIP      None            <none>         2379/TCP                                                  93m
+kube-prometheus-stack     kube-prometheus-stack-alertmanager               ClusterIP      10.43.114.25    <none>         9093/TCP                                                  93m
+kube-prometheus-stack     kube-prometheus-stack-operator                   ClusterIP      10.43.244.229   <none>         443/TCP                                                   93m
+kube-prometheus-stack     kube-prometheus-stack-prometheus-node-exporter   ClusterIP      10.43.173.60    <none>         9100/TCP                                                  93m
+kube-prometheus-stack     kube-prometheus-stack-kube-state-metrics         ClusterIP      10.43.147.90    <none>         8080/TCP                                                  93m
+kube-prometheus-stack     kube-prometheus-stack-prometheus                 ClusterIP      10.43.139.178   <none>         9090/TCP                                                  93m
+kube-system               kube-prometheus-stack-kubelet                    ClusterIP      None            <none>         10250/TCP,10255/TCP,4194/TCP                              93m
+loki-distributed          loki-distributed-memberlist                      ClusterIP      None            <none>         7946/TCP                                                  93m
+loki-distributed          loki-distributed-ingester-headless               ClusterIP      None            <none>         3100/TCP,9095/TCP                                         93m
+loki-distributed          loki-distributed-query-frontend                  ClusterIP      None            <none>         3100/TCP,9095/TCP,9096/TCP                                93m
+loki-distributed          loki-distributed-querier-headless                ClusterIP      None            <none>         3100/TCP,9095/TCP                                         93m
+loki-distributed          loki-distributed-distributor                     ClusterIP      10.43.235.183   <none>         3100/TCP,9095/TCP                                         93m
+loki-distributed          loki-distributed-querier                         ClusterIP      10.43.35.214    <none>         3100/TCP,9095/TCP                                         93m
+loki-distributed          loki-distributed-gateway                         ClusterIP      10.43.245.76    <none>         80/TCP                                                    93m
+loki-distributed          loki-distributed-ingester                        ClusterIP      10.43.168.198   <none>         3100/TCP,9095/TCP                                         93m
+tempo-distributed         tempo-distributed-gossip-ring                    ClusterIP      None            <none>         7946/TCP                                                  93m
+tempo-distributed         tempo-distributed-query-frontend-discovery       ClusterIP      None            <none>         3100/TCP,9095/TCP,16686/TCP,16687/TCP                     93m
+tempo-distributed         tempo-distributed-query-frontend                 ClusterIP      10.43.85.84     <none>         3100/TCP,9095/TCP,16686/TCP,16687/TCP                     93m
+tempo-distributed         tempo-distributed-ingester                       ClusterIP      10.43.242.5     <none>         3100/TCP,9095/TCP                                         93m
+tempo-distributed         tempo-distributed-querier                        ClusterIP      10.43.20.61     <none>         3100/TCP,9095/TCP                                         93m
+tempo-distributed         tempo-distributed-distributor                    ClusterIP      10.43.13.183    <none>         3100/TCP,9095/TCP,4317/TCP,55680/TCP                      93m
+tempo-distributed         tempo-distributed-memcached                      ClusterIP      10.43.106.141   <none>         11211/TCP,9150/TCP                                        93m
+tempo-distributed         tempo-distributed-compactor                      ClusterIP      10.43.10.39     <none>         3100/TCP                                                  93m
+tempo-distributed         tempo-distributed-metrics-generator              ClusterIP      10.43.129.131   <none>         9095/TCP,3100/TCP                                         93m
+opentelemetry-collector   opentelemetry-collector                          ClusterIP      10.43.15.153    <none>         6831/UDP,14250/TCP,14268/TCP,4317/TCP,4318/TCP,9411/TCP   93m
+linkerd                   linkerd-dst                                      ClusterIP      10.43.126.243   <none>         8086/TCP                                                  92m
+linkerd                   linkerd-dst-headless                             ClusterIP      None            <none>         8086/TCP                                                  92m
+linkerd                   linkerd-sp-validator                             ClusterIP      10.43.41.57     <none>         443/TCP                                                   92m
+linkerd                   linkerd-policy                                   ClusterIP      None            <none>         8090/TCP                                                  92m
+linkerd                   linkerd-policy-validator                         ClusterIP      10.43.225.36    <none>         443/TCP                                                   92m
+linkerd                   linkerd-identity                                 ClusterIP      10.43.136.50    <none>         8080/TCP                                                  92m
+linkerd                   linkerd-identity-headless                        ClusterIP      None            <none>         8080/TCP                                                  92m
+linkerd                   linkerd-proxy-injector                           ClusterIP      10.43.51.211    <none>         443/TCP                                                   92m
+app                       app                                              ClusterIP      10.43.108.47    <none>         80/TCP                                                    91m
+linkerd-viz               metrics-api                                      ClusterIP      10.43.179.165   <none>         8085/TCP                                                  67m
+linkerd-viz               tap-injector                                     ClusterIP      10.43.71.201    <none>         443/TCP                                                   67m
+linkerd-viz               tap                                              ClusterIP      10.43.191.138   <none>         8088/TCP,443/TCP                                          67m
+linkerd-viz               web                                              ClusterIP      10.43.18.39     <none>         8084/TCP,9994/TCP                                         67m
+linkerd-jaeger            jaeger-injector                                  ClusterIP      10.43.72.101    <none>         443/TCP                                                   67m
 ```
 
 Use port forward to access UI and service
@@ -259,6 +291,9 @@ Setup the app and call it
 ```sh
 kubectl port-forward -n app service/app 8080:80
 curl -i "http://localhost:8080/depth/2"
+```
+
+![loki+tempo+grafana](assets/2022-07-11-003146_1699x1273_scrot.png)
 
 #### Links & inspiration
 

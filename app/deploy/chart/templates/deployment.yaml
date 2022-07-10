@@ -36,6 +36,8 @@ spec:
           env:
             - name: APP_PORT
               value: "8080"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://opentelemetry-collector.opentelemetry-collector:4317"
           ports:
             - name: http
               containerPort: 8080

@@ -1,0 +1,6 @@
+dependencies:
+- name: linkerd-jaeger
+  repository: https://helm.linkerd.io/stable
+  version: 2.11.3
+digest: sha256:4137187711a28618e6370a7a9bd84f28f5cb62df9d628e809a238298be230454
+generated: "2022-07-09T20:51:51.406904445+02:00"
