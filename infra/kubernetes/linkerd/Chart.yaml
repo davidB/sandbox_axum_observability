@@ -4,9 +4,9 @@ apiVersion: v2
 name: linkerd
 description: An adapter chart for linkerd
 type: application
-version: 2.11.2
-appVersion: "2.11.2"
+version: 2.11.3
+appVersion: "2.11.3"
 dependencies:
   - name: "linkerd2"
-    version: "2.11.2"
+    version: "2.11.3"
     repository: "https://helm.linkerd.io/stable"

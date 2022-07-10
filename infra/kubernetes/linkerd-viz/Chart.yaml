@@ -7,9 +7,9 @@ apiVersion: v2
 name: linkerd-viz
 description: An adapter chart for linkerd-viz (use existing grafana & prometheus)
 type: application
-version: 2.11.2
-appVersion: "2.11.2"
+version: 2.11.3
+appVersion: "2.11.3"
 dependencies:
   - name: "linkerd-viz"
-    version: "2.11.2"
+    version: "2.11.3"
     repository: "https://helm.linkerd.io/stable"
