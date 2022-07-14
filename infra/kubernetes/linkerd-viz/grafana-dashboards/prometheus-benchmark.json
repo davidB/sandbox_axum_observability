@@ -2526,7 +2526,9 @@
         "mode": "time",
         "name": null,
         "show": true,
-        "values": ["avg"]
+        "values": [
+          "avg"
+        ]
       },
       "yaxes": [
         {
@@ -2620,7 +2622,9 @@
         "mode": "time",
         "name": null,
         "show": true,
-        "values": ["avg"]
+        "values": [
+          "avg"
+        ]
       },
       "yaxes": [
         {
@@ -2714,7 +2718,9 @@
         "mode": "time",
         "name": null,
         "show": true,
-        "values": ["avg"]
+        "values": [
+          "avg"
+        ]
       },
       "yaxes": [
         {
@@ -3684,7 +3690,9 @@
   "refresh": "1m",
   "schemaVersion": 16,
   "style": "dark",
-  "tags": ["prometheus"],
+  "tags": [
+    "prometheus"
+  ],
   "templating": {
     "list": [
       {
@@ -3750,7 +3758,17 @@
       "2h",
       "1d"
     ],
-    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
   },
   "timezone": "browser",
   "title": "Prometheus Benchmark - 2.7.x",

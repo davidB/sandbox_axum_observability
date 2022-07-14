@@ -6,6 +6,27 @@ kube-prometheus-stack:
     forceDeployDashboards: true
   prometheus:
     prometheusSpec:
+      ## Interval between consecutive scrapes.
+      ## Defaults to 30s.
+      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/release-0.44/pkg/prometheus/promcfg.go#L180-L183
+      ##
+      scrapeInterval: "30s"
+      retention: 60d
+      wallCompression: true
+      ## Prometheus StorageSpec for persistent data
+      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
+      ##
+      storageSpec: {}
+      ## Using PersistentVolumeClaim
+      ##
+      #  volumeClaimTemplate:
+      #    spec:
+      #      storageClassName: gluster
+      #      accessModes: ["ReadWriteOnce"]
+      #      resources:
+      #        requests:
+      #          storage: 50Gi
+      #    selector: {}
       additionalScrapeConfigs:
         # from linkerd
         # https://github.com/linkerd/linkerd2/blob/main/viz/charts/linkerd-viz/templates/prometheus.yaml#L28

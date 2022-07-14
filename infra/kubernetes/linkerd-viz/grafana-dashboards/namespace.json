@@ -95,7 +95,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": true,
-      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
+      "colors": [
+        "#d44a3a",
+        "rgba(237, 129, 40, 0.89)",
+        "#299c46"
+      ],
       "datasource": "prometheus",
       "format": "percentunit",
       "gauge": {
@@ -150,7 +154,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(irate(response_total{classification=\"success\", namespace=~\"$namespace\", deployment=~\"$deployment\"}[30s])) / sum(irate(response_total{namespace=~\"$namespace\", deployment=~\"$deployment\"}[30s]))",
+          "expr": "sum(irate(response_total{classification=\"success\", namespace=~\"$namespace\", deployment=~\"$deployment\"}[60s])) / sum(irate(response_total{namespace=~\"$namespace\", deployment=~\"$deployment\"}[60s]))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "",
@@ -174,7 +178,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
+      "colors": [
+        "#d44a3a",
+        "rgba(237, 129, 40, 0.89)",
+        "#299c46"
+      ],
       "datasource": "prometheus",
       "format": "rps",
       "gauge": {
@@ -229,7 +237,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(irate(request_total{namespace=~\"$namespace\", deployment=~\"$deployment\"}[30s]))",
+          "expr": "sum(irate(request_total{namespace=~\"$namespace\", deployment=~\"$deployment\"}[60s]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "",
@@ -253,7 +261,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
+      "colors": [
+        "#d44a3a",
+        "rgba(237, 129, 40, 0.89)",
+        "#299c46"
+      ],
       "datasource": "prometheus",
       "format": "none",
       "gauge": {
@@ -383,7 +395,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(response_total{classification=\"success\", namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\"}[30s])) by (deployment) / sum(irate(response_total{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\"}[30s])) by (deployment)",
+          "expr": "sum(irate(response_total{classification=\"success\", namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\"}[60s])) by (deployment) / sum(irate(response_total{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\"}[60s])) by (deployment)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "deploy/{{deployment}}",
@@ -469,14 +481,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(request_total{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\", tls=\"true\"}[30s])) by (deployment)",
+          "expr": "sum(irate(request_total{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\", tls=\"true\"}[60s])) by (deployment)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "🔒deploy/{{deployment}}",
           "refId": "A"
         },
         {
-          "expr": "sum(irate(request_total{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\", tls!=\"true\"}[30s])) by (deployment)",
+          "expr": "sum(irate(request_total{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\", tls!=\"true\"}[60s])) by (deployment)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "deploy/{{deployment}}",
@@ -562,7 +574,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(irate(response_latency_ms_bucket{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\"}[30s])) by (le, deployment))",
+          "expr": "histogram_quantile(0.95, sum(irate(response_latency_ms_bucket{namespace=~\"$namespace\", deployment=~\"$deployment\", direction=\"inbound\"}[60s])) by (le, deployment))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "p95 deploy/{{deployment}}",
@@ -696,7 +708,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\"}[30s])) by (deployment) / sum(irate(response_total{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\"}[30s])) by (deployment)",
+          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\"}[60s])) by (deployment) / sum(irate(response_total{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\"}[60s])) by (deployment)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "deploy/{{deployment}}",
@@ -782,7 +794,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\", tls=\"true\"}[30s])) by (deployment)",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\", tls=\"true\"}[60s])) by (deployment)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -790,7 +802,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\", tls!=\"true\"}[30s])) by (deployment)",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\", tls!=\"true\"}[60s])) by (deployment)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -877,7 +889,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\"}[30s])) by (le, deployment))",
+          "expr": "histogram_quantile(0.95, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", deployment=\"$deployment\", direction=\"inbound\"}[60s])) by (le, deployment))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -930,7 +942,9 @@
   "refresh": "1m",
   "schemaVersion": 18,
   "style": "dark",
-  "tags": ["linkerd"],
+  "tags": [
+    "linkerd"
+  ],
   "templating": {
     "list": [
       {
@@ -996,7 +1010,17 @@
       "2h",
       "1d"
     ],
-    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
   },
   "timezone": "",
   "title": "Linkerd Namespace",

@@ -94,7 +94,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
+      "colors": [
+        "#d44a3a",
+        "rgba(237, 129, 40, 0.89)",
+        "#299c46"
+      ],
       "datasource": "prometheus",
       "decimals": null,
       "format": "percentunit",
@@ -149,7 +153,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s])) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s]))",
+          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s])) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s]))",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -175,7 +179,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "prometheus",
       "decimals": null,
       "format": "none",
@@ -230,7 +238,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s]))",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s]))",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -256,7 +264,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "prometheus",
       "decimals": null,
       "format": "none",
@@ -336,7 +348,11 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
       "datasource": "prometheus",
       "format": "none",
       "gauge": {
@@ -465,7 +481,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s])) by (k8s_job) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s])) by (k8s_job)",
+          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s])) by (k8s_job) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s])) by (k8s_job)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "job/{{k8s_job}}",
@@ -552,14 +568,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\", tls=\"true\"}[30s])) by (k8s_job)",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\", tls=\"true\"}[60s])) by (k8s_job)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "🔒job/{{k8s_job}}",
           "refId": "A"
         },
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\", tls!=\"true\"}[30s])) by (k8s_job)",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\", tls!=\"true\"}[60s])) by (k8s_job)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "job/{{k8s_job}}",
@@ -646,14 +662,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s])) by (le, k8s_job))",
+          "expr": "histogram_quantile(0.5, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s])) by (le, k8s_job))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "p50 job/{{k8s_job}}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s])) by (le, k8s_job))",
+          "expr": "histogram_quantile(0.95, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s])) by (le, k8s_job))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -661,7 +677,7 @@
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[30s])) by (le, k8s_job))",
+          "expr": "histogram_quantile(0.99, sum(irate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"inbound\"}[60s])) by (le, k8s_job))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "p99 job/{{k8s_job}}",
@@ -1052,7 +1068,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(response_total{classification=\"success\", k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (k8s_job, pod) / sum(irate(response_total{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (k8s_job, pod)",
+              "expr": "sum(irate(response_total{classification=\"success\", k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (k8s_job, pod) / sum(irate(response_total{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (k8s_job, pod)",
               "format": "time_series",
               "instant": false,
               "intervalFactor": 1,
@@ -1140,14 +1156,14 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(request_total{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\", tls=\"true\"}[30s])) by (k8s_job, pod)",
+              "expr": "sum(irate(request_total{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\", tls=\"true\"}[60s])) by (k8s_job, pod)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "🔒po/{{pod}}",
               "refId": "A"
             },
             {
-              "expr": "sum(irate(request_total{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\", tls!=\"true\"}[30s])) by (k8s_job, pod)",
+              "expr": "sum(irate(request_total{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\", tls!=\"true\"}[60s])) by (k8s_job, pod)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "po/{{pod}}",
@@ -1234,21 +1250,21 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(response_latency_ms_bucket{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (le, k8s_job))",
+              "expr": "histogram_quantile(0.5, sum(rate(response_latency_ms_bucket{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (le, k8s_job))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "P50 job/{{k8s_job}}",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(response_latency_ms_bucket{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (le, k8s_job))",
+              "expr": "histogram_quantile(0.95, sum(rate(response_latency_ms_bucket{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (le, k8s_job))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "P95 job/{{k8s_job}}",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(response_latency_ms_bucket{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (le, k8s_job))",
+              "expr": "histogram_quantile(0.99, sum(rate(response_latency_ms_bucket{k8s_job!=\"\", k8s_job=\"$inbound\", dst_namespace=\"$namespace\", dst_k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (le, k8s_job))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "P99 job/{{k8s_job}}",
@@ -1369,7 +1385,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (dst_k8s_job) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (dst_k8s_job)",
+          "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (dst_k8s_job) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (dst_k8s_job)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "job/{{dst_k8s_job}}",
@@ -1456,14 +1472,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\", tls=\"true\"}[30s])) by (dst_k8s_job)",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\", tls=\"true\"}[60s])) by (dst_k8s_job)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "🔒job/{{dst_k8s_job}}",
           "refId": "A"
         },
         {
-          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\", tls!=\"true\"}[30s])) by (dst_k8s_job)",
+          "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\", tls!=\"true\"}[60s])) by (dst_k8s_job)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "job/{{dst_k8s_job}}",
@@ -1549,7 +1565,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\"}[30s])) by (le, dst_k8s_job))",
+          "expr": "histogram_quantile(0.95, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", direction=\"outbound\"}[60s])) by (le, dst_k8s_job))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "P95 job/{{dst_k8s_job}}",
@@ -1939,7 +1955,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[30s])) by (dst_k8s_job) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[30s])) by (dst_k8s_job)",
+              "expr": "sum(irate(response_total{classification=\"success\", namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[60s])) by (dst_k8s_job) / sum(irate(response_total{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[60s])) by (dst_k8s_job)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "job/{{dst_k8s_job}}",
@@ -2026,14 +2042,14 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\", tls=\"true\"}[30s])) by (dst_k8s_job)",
+              "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\", tls=\"true\"}[60s])) by (dst_k8s_job)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "🔒job/{{dst_k8s_job}}",
               "refId": "A"
             },
             {
-              "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\", tls!=\"true\"}[30s])) by (dst_k8s_job)",
+              "expr": "sum(irate(request_total{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\", tls!=\"true\"}[60s])) by (dst_k8s_job)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "job/{{dst_k8s_job}}",
@@ -2119,21 +2135,21 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.5, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[30s])) by (le, dst_k8s_job))",
+              "expr": "histogram_quantile(0.5, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[60s])) by (le, dst_k8s_job))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "P50 job/{{dst_k8s_job}}",
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.95, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[30s])) by (le, dst_k8s_job))",
+              "expr": "histogram_quantile(0.95, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[60s])) by (le, dst_k8s_job))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "P95 job/{{dst_k8s_job}}",
               "refId": "B"
             },
             {
-              "expr": "histogram_quantile(0.99, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[30s])) by (le, dst_k8s_job))",
+              "expr": "histogram_quantile(0.99, sum(rate(response_latency_ms_bucket{namespace=\"$namespace\", k8s_job=\"$job\", dst_k8s_job=\"$outbound\", direction=\"outbound\"}[60s])) by (le, dst_k8s_job))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "P99 job/{{dst_k8s_job}}",
@@ -2207,7 +2223,9 @@
   "refresh": "1m",
   "schemaVersion": 18,
   "style": "dark",
-  "tags": ["linkerd"],
+  "tags": [
+    "linkerd"
+  ],
   "templating": {
     "list": [
       {
@@ -2317,7 +2335,17 @@
       "2h",
       "1d"
     ],
-    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
   },
   "timezone": "",
   "title": "Linkerd Job",

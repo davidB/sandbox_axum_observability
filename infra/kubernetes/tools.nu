@@ -177,16 +177,23 @@ export def uninstall_chart [chart_name: string, chart_namespace?: string] {
 
 export def download_grafana_dashboards [folder: path] {
   # based on https://artifacthub.io/packages/helm/grafana/grafana?modal=template&template=configmap.yaml
-  let dir = $"($folder)/dashboards"
+  let dir = $"($folder)/grafana-dashboards"
   mkdir $dir
-  open $"($folder)/values.yaml" | get dashboards | transpose key value | each { |it|
-    (
+  open $"($folder)/values.yaml" | get dashboards | transpose key value | each --numbered { |it|
+    let url = $"https://grafana.com/api/dashboards/($it.item.value.gnetId)/revisions/($it.item.value.revision  | default 1)/download"
+    let content = (
       fetch -H ["Accept" "application/json"]
         -H ["Content-Type" "application/json;charset=UTF-8"]
-        $"https://grafana.com/api/dashboards/($it.value.gnetId)/revisions/($it.value.revision  | default 1)/download"
-      | replace-all -p "\\$\\{DS_PROMETHEUS\\}" -r $it.value.datasource
-      | save $"($dir)/($it.key).json"
+        --raw
+        $url
     )
+    (
+      $content
+      | str replace '${DS_PROMETHEUS}' $it.item.value.datasource --all --string
+      | str replace '[30s]' '[60s]' --all --string
+      | save $"($dir)/($it.item.key).json" --raw
+    )
+    echo $url
   }
 }
 
