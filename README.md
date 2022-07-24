@@ -268,11 +268,16 @@ Use port forward to access UI and service
 # access grafana UI on http://127.0.0.1:8040
 kubectl port-forward -n grafana service/grafana 8040:80
 
-# access grafana UI on http://127.0.0.1:9000 (user/pass: minio/minio123)
-kubectl port-forward -n minio service/minio 9000:9000
+# access grafana UI on http://127.0.0.1:9009 (user/pass: minio/minio123)
+kubectl port-forward -n minio service/minio 9009:9000
 
 # access linerd-viz UI on http://127.0.0.1:8084
 kubectl port-forward -n linkerd-viz service/web 8084:8084
+
+# On rancher-desktop only
+# access traefik dashboard on http://127.0.0.1:9000/dashboard/#/
+bash -c 'kubectl port-forward -n kube-system $(kubectl -n kube-system get pods --selector "app.kubernetes.io/name=traefik" --output=name) 9000:9000'
+
 ```
 <!--
 # access grafana UI on https://127.0.0.1:9443
@@ -294,6 +299,21 @@ curl -i "http://localhost:8080/depth/2"
 ```
 
 ![loki+tempo+grafana](assets/2022-07-11-003146_1699x1273_scrot.png)
+
+But when using port-forward request doesn't go through linkerd proxy (so no monitoring of route,...) (see [port-forward traffic skips the proxy · Issue #2352 · linkerd/linkerd2](https://github.com/linkerd/linkerd2/issues/2352))
+So If you don't have ingress setup,... you send request from inside the cluster:
+
+```sh
+kubectl run tmp-shell -n default --restart=Never --rm -i -tty --image curlimages/curl:7.84.0 -- curl -L -v http://app.app.svc.cluster.local/depth/2
+
+
+# Or via an interactive shell if you want
+kubectl run tmp-shell -n default --restart=Never --rm -i --tty --image curlimages/curl:7.84.0 -- sh
+> curl -L -v http://app.app.svc.cluster.local/depth/2
+(Ctrl+C)
+
+kubectl delete pod tmp-shell -n default
+```
 
 #### Links & inspiration
 

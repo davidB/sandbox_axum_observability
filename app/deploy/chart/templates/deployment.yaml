@@ -36,6 +36,9 @@ spec:
           env:
             - name: APP_PORT
               value: "8080"
+            # to force to go througth service balancer, mesh-proxy,...
+            - name: APP_REMOTE_URL
+              value: "http://{{ include "app.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}/"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://opentelemetry-collector.opentelemetry-collector:4317"
           ports:
