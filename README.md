@@ -298,22 +298,34 @@ kubectl port-forward -n app service/app 8080:80
 curl -i "http://localhost:8080/depth/2"
 ```
 
-![loki+tempo+grafana](assets/2022-07-11-003146_1699x1273_scrot.png)
+![log+loki+grafana](assets/log_2022-07-24-212509_1737x1301_scrot.png)
+
+![trace+tempo+grafana](assets/trace_2022-07-24-212616_1622x1288_scrot.png)
+
+![node+tempo+grafana](assets/node_2022-07-24-212603_1639x1266_scrot.png)
 
 But when using port-forward request doesn't go through linkerd proxy (so no monitoring of route,...) (see [port-forward traffic skips the proxy · Issue #2352 · linkerd/linkerd2](https://github.com/linkerd/linkerd2/issues/2352))
 So If you don't have ingress setup,... you send request from inside the cluster:
 
 ```sh
-kubectl run tmp-shell -n default --restart=Never --rm -i -tty --image curlimages/curl:7.84.0 -- curl -L -v http://app.app.svc.cluster.local/depth/2
+kubectl run tmp-shell -n default --restart=Never --rm -i -tty --image curlimages/curl:7.84.0 -- curl -L -v http://app.app.svc.cluster.local/depth/3
 
 
 # Or via an interactive shell if you want
 kubectl run tmp-shell -n default --restart=Never --rm -i --tty --image curlimages/curl:7.84.0 -- sh
-> curl -L -v http://app.app.svc.cluster.local/depth/2
-(Ctrl+C)
+> curl -L -v http://app.app.svc.cluster.local/depth/3
+...
+> exit
 
 kubectl delete pod tmp-shell -n default
 ```
+
+![linkerd_route](assets/linkerd_route_2022-07-24-213720_1641x1289_scrot.png)
+
+![pod_usage](assets/pod_2022-07-24-214343_1662x1265_scrot.png)
+
+Sample list of other dashboards
+![pod_usage](assets/dashboards_2022-07-24-214238_1388x1245_scrot.png)
 
 #### Links & inspiration
 
