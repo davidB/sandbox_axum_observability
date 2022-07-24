@@ -18,7 +18,7 @@ use serde_json::json;
 use std::net::SocketAddr;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
-use tracing::info;
+use tracing::{error, info, trace, warn};
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -145,7 +145,6 @@ fn app(remote_url: &str) -> Router {
     };
     // build our application with a route
     Router::new()
-        .route("/health", get(health))
         .route("/depth/:depth", get(simulation_depth))
         .route("/", get(simulation))
         .layer(Extension(simulation_settings))
@@ -158,6 +157,8 @@ fn app(remote_url: &str) -> Router {
                 .allow_origin(Any),
         )
         .layer(opentelemetry_tracing_layer())
+        // route below are not managed/monitored
+        .route("/health", get(health))
 }
 
 async fn health() -> impl IntoResponse {
@@ -224,6 +225,7 @@ async fn simulation_depth(
         .unwrap_or(2.0_f32);
     let depth = depth.min(10).max(0);
 
+    sample_log();
     fake_job(duration_level_max).await;
 
     let resp_body = if depth > 0 {
@@ -246,8 +248,15 @@ async fn simulation_depth(
 async fn fake_job(duration_level_max: f32) {
     let mut rng: StdRng = SeedableRng::from_entropy();
     let duration = Duration::from_secs_f32(rng.gen_range(0.0_f32..=duration_level_max));
-    info!(duration=?duration, "sample log with a value");
+    info!(duration=?duration, "sample log (info) with a value line");
     tokio::time::sleep(duration).await
+}
+
+fn sample_log() {
+    trace!(value = "foo", "sample log (trace) with a value line");
+    info!(value = "bar", "sample log (info) with a value line");
+    warn!(value = "toto", "sample log (warn) with a value line");
+    error!(value = ":-(", "sample log (error) with a value line");
 }
 
 async fn call_remote_app(url: &str) -> Result<serde_json::Value, reqwest::Error> {
