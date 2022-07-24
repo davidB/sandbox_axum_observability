@@ -11,7 +11,7 @@ spec:
           grpc:
           http:
       opencensus:
-      zipkin:
+      # zipkin:
       jaeger:
         protocols:
           grpc:
@@ -32,6 +32,46 @@ spec:
       extensions: [health_check]
       pipelines:
         traces:
-          receivers: [otlp,opencensus,zipkin,jaeger]
+          receivers: [otlp,jaeger,opencensus]
           processors: [batch]
           exporters: [otlp]
+  # ports should be infered by operator but can't see them on pod/deployment'spec/daemonset'spec
+  # but ok on service
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      appProtocol: grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      protocol: TCP
+      appProtocol: http
+      port: 4318
+      targetPort: 4318
+    - name: otlp-http-legacy
+      protocol: TCP
+      appProtocol: http
+      port: 55681
+      targetPort: 4318
+    - name: opencensus
+      protocol: TCP
+      port: 55678
+      targetPort: 55678
+    - name: jaeger-grpc
+      protocol: TCP
+      appProtocol: grpc
+      port: 14250
+      targetPort: 14250
+    - name: jaeger-thrift-http
+      protocol: TCP
+      appProtocol: http
+      port: 14268
+      targetPort: 14268
+    - name: jaeger-thrift-compact
+      protocol: UDP
+      port: 6831
+      targetPort: 6831
+    - name: jaeger-thrift-binary
+      protocol: UDP
+      port: 6832
+      targetPort: 6832

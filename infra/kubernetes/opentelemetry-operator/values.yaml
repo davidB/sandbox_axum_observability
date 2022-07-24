@@ -1,5 +1,5 @@
 collector:
-  mode: daemonset
+  mode: deployment
   config:
     exporters:
       otlp:

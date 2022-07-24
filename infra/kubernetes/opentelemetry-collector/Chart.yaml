@@ -2,7 +2,7 @@ apiVersion: v2
 name: opentelemetry-collector
 description: An adapter chart for opentelemetry collector
 type: application
-version: "0.22.0"
+version: "0.22.1"
 appVersion: "0.55.0"
 home: https://opentelemetry.io/
 sources:
@@ -10,5 +10,5 @@ sources:
 icon: https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png
 dependencies:
   - name: "opentelemetry-collector"
-    version: "0.22.0"
+    version: "0.22.1"
     repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"

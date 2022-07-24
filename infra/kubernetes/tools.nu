@@ -26,7 +26,7 @@ export def find_charts [] {
     # ["opentelemetry-operator" "open-telemetry"       ["cert-manager" "tempo-distributed"]]
     ["linkerd"                 "linkerd"              []]
     ["linkerd-viz"             "linkerd"              ["linkerd" "grafana" "kube-prometheus-stack"]]
-    ["linkerd-jaeger"          "linkerd"              ["linkerd" "opentelemetry-collector"]]
+    # ["linkerd-jaeger"          "linkerd"              ["linkerd" "opentelemetry-collector"]]
   ]
 }
 

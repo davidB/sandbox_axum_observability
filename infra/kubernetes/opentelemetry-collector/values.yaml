@@ -8,7 +8,8 @@ opentelemetry-collector:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-      opencensus: {}
+      opencensus:
+        endpoint: 0.0.0.0:55678
       # zipkin:
       jaeger:
         protocols:
@@ -37,11 +38,15 @@ opentelemetry-collector:
       pipelines:
         traces:
           receivers: [otlp, jaeger, opencensus]
-          processors:
-            - memory_limiter
-            - batch
+          processors: [memory_limiter, batch]
           exporters: [otlp]
-
+  ports:
+    opencensus:
+      enabled: true
+      containerPort: 55678
+      servicePort: 55678
+      hostPort: 55678
+      protocol: TCP
   resources:
     limits:
       cpu: "1"

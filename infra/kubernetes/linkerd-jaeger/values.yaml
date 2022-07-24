@@ -7,5 +7,7 @@ linkerd-jaeger:
     # We used  opentelemetry operator to deploy the collector
     enabled: false
   webhook:
-    collectorSvcAddr: "opentelemetry-collector.opentelemetry-collector:55678" #jaeger (or opencensus)
-    # collectorSvcAccount: ???
+    # collectorSvcAddr: "opentelemetry-collector.opentelemetry-collector:55678" #jaeger (or opencensus)
+    collectorSvcAddr: tempo-distributed-distributor.tempo-distributed:55678
+    # collectorSvcAddr: "localhost:55678" #jaeger (or opencensus)
+    # collectorSvcAccount: opentelemetry-collector

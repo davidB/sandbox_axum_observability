@@ -17,6 +17,8 @@ tempo-distributed:
     otlp:
       grpc:
         enabled: true
+    opencensus:
+      enabled: true
   # see https://grafana.com/docs/tempo/latest/configuration/#storage
   storage:
     trace:
