@@ -25,8 +25,8 @@ serviceAccount:
 
 podAnnotations:
   linkerd.io/inject: enabled
-  # sidecar.opentelemetry.io/inject: "true"
-
+  sidecar.opentelemetry.io/inject: "true"
+  instrumentation.opentelemetry.io/inject-sdk: "true" # to inject environment variables only by opentelemetry-operator
 
 podSecurityContext:
   {}

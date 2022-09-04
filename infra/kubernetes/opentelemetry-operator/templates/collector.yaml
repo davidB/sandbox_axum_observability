@@ -1,77 +1,92 @@
+# TODO do not loop when not in sidecar mode (or loop over [ $.Release.Namespace ])
+{{- range .Values.collector.sidecarNamespaces }}
+---
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ $.Release.Name }}
+  namespace: {{ . }}
 spec:
-  mode: {{ .Values.collector.mode }}
+  mode: {{ $.Values.collector.mode }}
   config: |
     receivers:
       otlp:
         protocols:
           grpc:
+            endpoint: 0.0.0.0:4317
           http:
+            endpoint: 0.0.0.0:4318
       opencensus:
+        endpoint: 0.0.0.0:55678
       # zipkin:
       jaeger:
         protocols:
           grpc:
+            endpoint: 0.0.0.0:14250
           thrift_http:
+            endpoint: 0.0.0.0:14268
           thrift_compact:
-          thrift_binary:
+            endpoint: 0.0.0.0:6831
+          # thrift_binary:
     processors:
-      batch:
-    extensions:
-      health_check:
+    #   batch: {}
+    #   # If set to null, will be overridden with values based on k8s resource limits
+    #   memory_limiter: null
+    # extensions: {}
+    #   health_check: {}
+    #   memory_ballast: {}
     exporters:
       otlp:
-        # otlp-grpc port
-        endpoint: {{ .Values.collector.config.exporters.otlp.endpoint }}
+        endpoint: {{ $.Values.collector.config.exporters.otlp.endpoint }}
         tls:
           insecure: true
     service:
-      extensions: [health_check]
+      # extensions: [health_check, memory_ballast]
+      extensions: []
       pipelines:
         traces:
-          receivers: [otlp,jaeger,opencensus]
-          processors: [batch]
+          receivers: [otlp, jaeger, opencensus]
+          # processors: [memory_limiter, batch]
+          processors: []
           exporters: [otlp]
   # ports should be infered by operator but can't see them on pod/deployment'spec/daemonset'spec
   # but ok on service
-  ports:
-    - name: otlp-grpc
-      protocol: TCP
-      appProtocol: grpc
-      port: 4317
-      targetPort: 4317
-    - name: otlp-http
-      protocol: TCP
-      appProtocol: http
-      port: 4318
-      targetPort: 4318
-    - name: otlp-http-legacy
-      protocol: TCP
-      appProtocol: http
-      port: 55681
-      targetPort: 4318
-    - name: opencensus
-      protocol: TCP
-      port: 55678
-      targetPort: 55678
-    - name: jaeger-grpc
-      protocol: TCP
-      appProtocol: grpc
-      port: 14250
-      targetPort: 14250
-    - name: jaeger-thrift-http
-      protocol: TCP
-      appProtocol: http
-      port: 14268
-      targetPort: 14268
-    - name: jaeger-thrift-compact
-      protocol: UDP
-      port: 6831
-      targetPort: 6831
-    - name: jaeger-thrift-binary
-      protocol: UDP
-      port: 6832
-      targetPort: 6832
+  # ports:
+  #   - name: otlp-grpc
+  #     protocol: TCP
+  #     appProtocol: grpc
+  #     port: 4317
+  #     targetPort: 4317
+  #   - name: otlp-http
+  #     protocol: TCP
+  #     appProtocol: http
+  #     port: 4318
+  #     targetPort: 4318
+  #   - name: otlp-http-legacy
+  #     protocol: TCP
+  #     appProtocol: http
+  #     port: 55681
+  #     targetPort: 4318
+  #   - name: opencensus
+  #     protocol: TCP
+  #     port: 55678
+  #     targetPort: 55678
+  #   - name: jaeger-grpc
+  #     protocol: TCP
+  #     appProtocol: grpc
+  #     port: 14250
+  #     targetPort: 14250
+  #   - name: jaeger-thrift-http
+  #     protocol: TCP
+  #     appProtocol: http
+  #     port: 14268
+  #     targetPort: 14268
+  #   - name: jaeger-thrift-compact
+  #     protocol: UDP
+  #     port: 6831
+  #     targetPort: 6831
+  #   - name: jaeger-thrift-binary
+  #     protocol: UDP
+  #     port: 6832
+  #     targetPort: 6832
+{{- end }}

@@ -1,5 +1,6 @@
 collector:
-  mode: deployment
+  mode: sidecar
+  sidecarNamespaces: ["app", "grafana"]
   config:
     exporters:
       otlp:
