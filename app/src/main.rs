@@ -3,13 +3,9 @@ use axum::http::Method;
 use axum::Extension;
 use axum::{response::IntoResponse, routing::get, Router};
 use axum_tracing_opentelemetry::{
-    find_current_trace_id, /*init_tracer,*/ opentelemetry_tracing_layer, CollectorKind,
+    find_current_trace_id, init_tracer, make_resource, opentelemetry_tracing_layer, CollectorKind,
 };
 use clap::{ArgEnum, Parser};
-use opentelemetry::{
-    global, sdk::propagation::TraceContextPropagator, sdk::trace as sdktrace, sdk::Resource,
-    trace::TraceError,
-};
 use rand::prelude::*;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
@@ -72,7 +68,11 @@ fn init_tracing(log_level: String, _tracing_collector_kind: CollectorKind) {
     std::env::set_var("RUST_LOG", std::env::var("RUST_LOG").unwrap_or(log_level));
 
     // let otel_tracer = init_tracer(tracing_collector_kind).expect("setup of Tracer");
-    let otel_tracer = init_tracer_otlp().expect("setup of Tracer");
+    let otel_tracer = init_tracer(
+        CollectorKind::Otlp,
+        make_resource(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")),
+    )
+    .expect("setup of Tracer");
     let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
 
     let fmt_layer = tracing_subscriber::fmt::layer()
@@ -90,35 +90,6 @@ fn init_tracing(log_level: String, _tracing_collector_kind: CollectorKind) {
         .with(EnvFilter::from_default_env())
         .with(otel_layer);
     tracing::subscriber::set_global_default(subscriber).unwrap();
-}
-
-pub fn init_tracer_otlp() -> Result<sdktrace::Tracer, TraceError> {
-    use opentelemetry_otlp::WithExportConfig;
-    use opentelemetry_semantic_conventions as semcov;
-
-    let resource = Resource::new(vec![
-        semcov::resource::SERVICE_NAME.string(env!("CARGO_PKG_NAME")), //TODO Replace with the name of your application
-        semcov::resource::SERVICE_VERSION.string(env!("CARGO_PKG_VERSION")), //TODO Replace with the version of your application
-    ]);
-    global::set_text_map_propagator(TraceContextPropagator::new());
-
-    // resource = resource.merge(&read_dt_metadata());
-    //endpoint (default = 0.0.0.0:4317 for grpc protocol, 0.0.0.0:4318 http protocol):
-    //.http().with_endpoint(collector_url),
-    let endpoint_grpc = std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT")
-        .unwrap_or_else(|_| "http://0.0.0.0:4317".to_string());
-    let exporter = opentelemetry_otlp::new_exporter()
-        .tonic()
-        .with_endpoint(endpoint_grpc);
-    opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(exporter)
-        .with_trace_config(
-            sdktrace::config()
-                .with_resource(resource)
-                .with_sampler(sdktrace::Sampler::AlwaysOn),
-        )
-        .install_batch(opentelemetry::runtime::Tokio)
 }
 
 #[tokio::main]
@@ -265,13 +236,8 @@ async fn call_remote_app(url: &str) -> Result<serde_json::Value, reqwest::Error>
         .with(TracingMiddleware)
         .build();
 
-    client
-        .get(url)
-        .send()
-        .await
-        .expect("response for get")
-        .json::<serde_json::Value>()
-        .await
+    let response = client.get(url).send().await.expect("to receive a response");
+    response.json::<serde_json::Value>().await
 }
 
 #[cfg(test)]
