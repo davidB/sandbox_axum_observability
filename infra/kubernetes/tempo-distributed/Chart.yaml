@@ -2,9 +2,9 @@ apiVersion: v2
 name: tempo-distributed
 description: An adapter chart for grafana tempo-distributed
 type: application
-version: 0.21.6
-appVersion: "1.4.1"
+version: 0.26.1
+appVersion: "1.5.0"
 dependencies:
   - name: "tempo-distributed"
-    version: "0.21.6"
+    version: "0.26.1"
     repository: "https://grafana.github.io/helm-charts"

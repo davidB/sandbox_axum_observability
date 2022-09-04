@@ -2,9 +2,9 @@ apiVersion: v2
 name: grafana
 description: An adapter chart for grafana
 type: application
-version: 6.31.0
-appVersion: "9.0.1"
+version: 6.36.2
+appVersion: "9.1.1"
 dependencies:
   - name: "grafana"
-    version: "6.31.0"
+    version: "6.36.2"
     repository: "https://grafana.github.io/helm-charts"
