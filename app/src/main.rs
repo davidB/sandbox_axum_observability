@@ -239,7 +239,8 @@ async fn call_remote_app(url: Url) -> Result<serde_json::Value, reqwest::Error> 
 mod tests {
     // see https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
     use super::*;
-    use assert2::{assert, check};
+    use assert2::{assert, check, let_assert};
+    use assert_json_diff::assert_json_include;
     use axum::{
         body::Body,
         http::{Request, StatusCode},
@@ -317,6 +318,17 @@ mod tests {
         check!(response.status() == StatusCode::OK);
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         let body: Value = serde_json::from_slice(&body).unwrap();
-        check!(body == json!({ "depth": 1, "response": { "simulation": "DONE" }}));
+        assert_json_include!(
+            actual: &body,
+            expected: json!({ "depth": 1, "response": { "simulation": "DONE" }})
+        );
+        check!(
+            body["response"]["trace_id"].as_str().is_none(),
+            "no trace_id when no tracing setup"
+        );
+        // let_assert!(Some(trace_id) = body["response"]["trace_id"].as_str());
+        // dbg!(trace_id);
+        // check!(!trace_id.is_empty());
+        // check!(trace_id != "null");
     }
 }
