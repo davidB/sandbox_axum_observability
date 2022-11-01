@@ -7,6 +7,7 @@ use axum_tracing_opentelemetry::{
 };
 use clap::{ArgEnum, Parser};
 use rand::prelude::*;
+use reqwest::Url;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
 use serde::Deserialize;
@@ -31,7 +32,7 @@ pub struct Settings {
     #[clap(long, env("APP_LOG_LEVEL"), default_value("info"))]
     pub log_level: String,
     #[clap(long, env("APP_REMOTE_URL"))]
-    pub remote_url: Option<String>,
+    pub remote_url: Option<Url>,
     // #[clap(long, env("APP_TRACING_COLLECTOR_URL"))]
     // pub tracing_collector_url: Option<String>,
     #[clap(
@@ -96,10 +97,9 @@ fn init_tracing(log_level: String, _tracing_collector_kind: CollectorKind) {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = Settings::parse();
     init_tracing(settings.log_level, settings.tracing_collector_kind.into());
-    let remote_url = settings
-        .remote_url
-        .unwrap_or_else(|| format!("http://{}:{}/", settings.host, settings.port));
-    let app = app(&remote_url);
+    let default_remote_url = Url::parse(&format!("http://{}:{}/", settings.host, settings.port))?;
+    let remote_url = settings.remote_url.unwrap_or(default_remote_url);
+    let app = app(remote_url);
     // run it
     let addr = format!("{}:{}", settings.host, settings.port).parse::<SocketAddr>()?;
     tracing::warn!("listening on {}", addr);
@@ -110,10 +110,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn app(remote_url: &str) -> Router {
-    let simulation_settings = SimulationSettings {
-        remote_url: remote_url.to_string(),
-    };
+fn app(remote_url: Url) -> Router {
+    let simulation_settings = SimulationSettings { remote_url };
     // build our application with a route
     Router::new()
         .route("/depth/:depth", get(simulation_depth))
@@ -172,7 +170,7 @@ struct SimulationParams {
 
 #[derive(Debug, Clone)]
 struct SimulationSettings {
-    remote_url: String,
+    remote_url: Url,
 }
 
 //TODO handle error
@@ -200,13 +198,10 @@ async fn simulation_depth(
     fake_job(duration_level_max).await;
 
     let resp_body = if depth > 0 {
-        let url = format!(
-            "{}depth/{}?duration={}",
-            settings.remote_url,
-            depth - 1,
-            duration_level_max,
-        );
-        let resp = call_remote_app(&url).await.expect("json response for get");
+        let mut url = settings.remote_url.clone();
+        url.set_path(&format!("depth/{}", depth - 1));
+        url.set_query(Some(&format!("duration={}", duration_level_max)));
+        let resp = call_remote_app(url).await.expect("json response for get");
         json!({ "depth": depth, "response": resp })
     } else {
         let trace_id = find_current_trace_id();
@@ -230,7 +225,7 @@ fn sample_log() {
     error!(value = ":-(", "sample log (error) with a value line");
 }
 
-async fn call_remote_app(url: &str) -> Result<serde_json::Value, reqwest::Error> {
+async fn call_remote_app(url: Url) -> Result<serde_json::Value, reqwest::Error> {
     // TracingMiddleware create a span on request
     let client = ClientBuilder::new(reqwest::Client::new())
         .with(TracingMiddleware)
@@ -255,7 +250,7 @@ mod tests {
 
     #[tokio::test]
     async fn health() {
-        let app = app("");
+        let app = app(Url::parse("http://localhost").expect("valid url"));
 
         let response = app
             .oneshot(
@@ -276,7 +271,7 @@ mod tests {
 
     #[tokio::test]
     async fn not_found() {
-        let app = app("");
+        let app = app(Url::parse("http://localhost").expect("valid url"));
 
         let response = app
             .oneshot(
@@ -295,14 +290,14 @@ mod tests {
 
     #[tokio::test]
     async fn simulation_with_duration() {
-        let listener = TcpListener::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).unwrap();
+        let listener = TcpListener::bind("127.0.0.1:0".parse::<SocketAddr>().unwrap()).unwrap();
         let addr = listener.local_addr().unwrap();
-        let remote_url = format!("http://{}", addr);
-        dbg!(&remote_url);
+        let server_url = format!("http://{}", addr);
+        let remote_url = Url::parse(&server_url).expect("valid url");
         tokio::spawn(async move {
             axum::Server::from_tcp(listener)
                 .unwrap()
-                .serve(app(&remote_url).into_make_service())
+                .serve(app(remote_url).into_make_service())
                 .await
                 .unwrap();
         });
@@ -312,7 +307,7 @@ mod tests {
         let response = client
             .request(
                 Request::builder()
-                    .uri(format!("http://{}/depth/1?duration_level_max=0.01", &addr))
+                    .uri(format!("{}/depth/1?duration_level_max=0.01", &server_url))
                     .body(Body::empty())
                     .unwrap(),
             )
