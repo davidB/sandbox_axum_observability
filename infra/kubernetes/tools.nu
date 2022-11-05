@@ -22,7 +22,6 @@ export def find_charts [] {
     ["loki-distributed"        "grafana"              ["minio" "grafana"]]
     ["promtail"                "grafana"              ["loki-distributed"]]
     ["tempo-distributed"       "grafana"              ["minio" "grafana"]]
-    # ["opentelemetry-collector" "open-telemetry"       ["cert-manager" "tempo-distributed"]]
     ["opentelemetry-operator" "open-telemetry"       ["cert-manager" "tempo-distributed"]]
     ["linkerd"                 "linkerd"              []]
     ["linkerd-viz"             "linkerd"              ["linkerd" "grafana" "kube-prometheus-stack"]]
@@ -35,7 +34,7 @@ export def find_current_cluster [] {
 }
 
 def install_helm [] {
-  if (which helm | empty?) {
+  if (which helm | is-empty) {
     echo "try to install 'helm' via brew"
     do -i { brew install helm } | complete
   }
@@ -99,7 +98,7 @@ export def detect_values_chart [cluster_name: string, chart_path: path] {
 
 export def add_chart_repo [name: string, url: string] {
   install_helm
-  if (helm repo list | from ssv --aligned-columns | where $it.NAME == $name | empty?) {
+  if (helm repo list | from ssv --aligned-columns | where $it.NAME == $name | is-empty) {
     do -i {
       helm repo add $name $url
       helm repo update $name
