@@ -96,22 +96,40 @@ on jaeger web ui,  service `example-opentelemetry` should be listed and trace sh
 
 ### direct to Jaeger
 
-Launch a local jaeger
+Launch a local jaeger (nased on [Jaeger > Getting Started > All in One](https://www.jaegertracing.io/docs/1.38/getting-started/#all-in-one))
 
 ```sh
 ## docker cli can be used instead of nerdctl
 ## to start jaeger (and auto remove on stop)
-nerdctl run --name jaeger --rm -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
+(nerdctl run --name jaeger --rm
+  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411
+  -e COLLECTOR_OTLP_ENABLED=true
+  -p 6831:6831/udp
+  -p 6832:6832/udp
+  -p 5778:5778
+  -p 16686:16686
+  -p 4317:4317
+  -p 4318:4318
+  -p 14250:14250
+  -p 14268:14268
+  -p 14269:14269
+  -p 9411:9411
+  jaegertracing/all-in-one:1.38
+)
 
-# open web ui
-open http://localhost:16686/
+## Ctrl-C to stop it
+```
 
+open [Jaeger web UI](http://localhost:16686/)
+
+Configure the exporter via environment variable [sdk-environment-variables](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md)
+
+```sh
+# replace let-env by "export" for bash...
+let-env OTEL_EXPORTER_OTLP_PROTOCOL = "grpc"
 
 # send trace via jaeger protocol to local jaeger (agent)
 cargo run -- --tracing-collector-kind jaeger
-
-# to stop jaeger
-nerdctl stop jaeger
 ```
 
 ## Infra

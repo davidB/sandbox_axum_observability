@@ -5,7 +5,7 @@ use axum::{response::IntoResponse, routing::get, Router};
 use axum_tracing_opentelemetry::{
     find_current_trace_id, init_tracer, make_resource, opentelemetry_tracing_layer, CollectorKind,
 };
-use clap::{ArgEnum, Parser};
+use clap::{Parser, ValueEnum};
 use rand::prelude::*;
 use reqwest::Url;
 use reqwest_middleware::ClientBuilder;
@@ -39,16 +39,18 @@ pub struct Settings {
         long,
         env("APP_TRACING_COLLECTOR_KIND"),
         default_value("otlp"),
-        arg_enum
+        value_enum
     )]
     pub tracing_collector_kind: MyCollectorKind,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, ArgEnum)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum MyCollectorKind {
     Otlp,
     Jaeger,
-    // Stdout,
+    Stdout,
+    Stderr,
+    NoWrite,
 }
 
 impl From<MyCollectorKind> for CollectorKind {
@@ -56,11 +58,14 @@ impl From<MyCollectorKind> for CollectorKind {
         match v {
             MyCollectorKind::Otlp => Self::Otlp,
             MyCollectorKind::Jaeger => Self::Jaeger,
+            MyCollectorKind::Stdout => Self::Stdout,
+            MyCollectorKind::Stderr => Self::Stderr,
+            MyCollectorKind::NoWrite => Self::NoWrite,
         }
     }
 }
 
-fn init_tracing(log_level: String, _tracing_collector_kind: CollectorKind) {
+fn init_tracing(log_level: String, tracing_collector_kind: CollectorKind) {
     use tracing_subscriber::filter::EnvFilter;
     // use tracing_subscriber::fmt::format::FmtSpan;
     use tracing_subscriber::layer::SubscriberExt;
@@ -68,9 +73,8 @@ fn init_tracing(log_level: String, _tracing_collector_kind: CollectorKind) {
     // std::env::set_var("RUST_LOG", "info,kube=trace");
     std::env::set_var("RUST_LOG", std::env::var("RUST_LOG").unwrap_or(log_level));
 
-    // let otel_tracer = init_tracer(tracing_collector_kind).expect("setup of Tracer");
     let otel_tracer = init_tracer(
-        CollectorKind::Otlp,
+        tracing_collector_kind,
         make_resource(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")),
     )
     .expect("setup of Tracer");

@@ -1,6 +1,6 @@
 [package]
 name = "example-opentelemetry"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 publish = false
 
@@ -13,7 +13,7 @@ axum-tracing-opentelemetry = { git = "https://github.com/davidB/axum-tracing-ope
   "jaeger",
   "otlp",
 ] }
-clap = { version = "3.1", features = ["derive", "env"] }
+clap = { version = "4.0", features = ["derive", "env"] }
 http = "0.2"
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }
 opentelemetry-jaeger = { version = "0.17", features = ["rt-tokio"] }
