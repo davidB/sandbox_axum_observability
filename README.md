@@ -9,7 +9,6 @@ Sandbox I used to experiment [axum] and observability (for target platform), obs
   - [Usage on local shell](#usage-on-local-shell)
   - [direct to Jaeger](#direct-to-jaeger)
 - [Infra](#infra)
-  - [Light infra docker-compose](#light-infra-docker-compose)
   - [Kubernetes](#kubernetes)
     - [Main components for the infra](#main-components-for-the-infra)
     - [Infra setup](#infra-setup)
@@ -98,7 +97,7 @@ on jaeger web ui,  service `example-opentelemetry` should be listed and trace sh
 
 Launch a local jaeger (nased on [Jaeger > Getting Started > All in One](https://www.jaegertracing.io/docs/1.38/getting-started/#all-in-one))
 
-```sh
+```nushell
 ## docker cli can be used instead of nerdctl
 ## to start jaeger (and auto remove on stop)
 (nerdctl run --name jaeger --rm
@@ -124,7 +123,7 @@ open [Jaeger web UI](http://localhost:16686/)
 
 Configure the exporter via environment variable [sdk-environment-variables](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md)
 
-```sh
+```nushell
 # replace let-env by "export" for bash...
 let-env OTEL_EXPORTER_OTLP_PROTOCOL = "grpc"
 
@@ -133,32 +132,6 @@ cargo run -- --tracing-collector-kind jaeger
 ```
 
 ## Infra
-
-### Light infra docker-compose
-
-based on [tempo/example/docker-compose/otel-collector at main · grafana/tempo](https://github.com/grafana/tempo/tree/main/example/docker-compose/otel-collector)
-
-The otel-collector is configured to allow to received oltp, jaeger, zipkin trace and to expose port on localhost
-
-```sh
-cd infra/docker-compose
-
-# or docker-compose
-nerdctl compose up
-```
-
-Launch the server
-
-```sh
-# `oltp` is the default collector kind, but should also work with `jaeger`
-cargo run
-```
-
-Send some curl command
-
-Open your browser to grafana explorer [http://localhost:3000/explore](http://localhost:3000/explore), select `Tempo` datasource (pre-configured),  copy/paste the trace_id from log into search field, click "Run Query"
-
-![](doc/images/20220522173234.png)
 
 ### Kubernetes
 
