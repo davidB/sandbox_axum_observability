@@ -146,8 +146,8 @@ The setup of the infrastructure (cluster) defined under `/infra/kubernetes`.
 
 #### Main components for the infra
 
-- [ ] S3 buckets to store logs, metrics, traces,...
-  - [ ] Use Minio to provide S3 buckets in on desktop cluster (use a deprecated version but easier to setup than the operator)
+- [x] S3 buckets to store logs, metrics, traces,...
+  - [x] Use Minio to provide S3 buckets in on desktop cluster (use a deprecated version but easier to setup than the operator)
 - [x] [Grafana](https://grafana.com/oss/grafana/) for dashboard and integration of log, trace, metrics
   - artifacthub.io : [grafana 6.31.0 · grafana/grafana](https://artifacthub.io/packages/helm/grafana/grafana)
   - enable sidecars, to allow other components to register datasources, dashboards, notifiers, alerts

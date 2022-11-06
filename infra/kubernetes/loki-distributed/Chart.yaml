@@ -2,9 +2,11 @@ apiVersion: v2
 name: loki-distributed
 description: An adapter chart for grafana loki-distributed
 type: application
-version: 0.56.6
+version: 0.64.0
 appVersion: "2.6.1"
+sources:
+  - https://artifacthub.io/packages/helm/grafana/loki-distributed
 dependencies:
   - name: "loki-distributed"
-    version: "0.56.6"
+    version: "0.64.0"
     repository: "https://grafana.github.io/helm-charts"
