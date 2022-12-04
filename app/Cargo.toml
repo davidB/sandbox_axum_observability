@@ -6,13 +6,13 @@ publish = false
 
 [dependencies]
 anyhow = "1.0"
-axum = "0.5"
-# axum-tracing-opentelemetry = { version = "0.5", features = ["jaeger", "otlp"] }
+axum = "0.6"
+axum-tracing-opentelemetry = { version = "0.6", features = ["jaeger", "otlp"] }
 # axum-tracing-opentelemetry = { path = "../../axum-tracing-opentelemetry", features = [
-axum-tracing-opentelemetry = { git = "https://github.com/davidB/axum-tracing-opentelemetry", features = [
-  "jaeger",
-  "otlp",
-] }
+# axum-tracing-opentelemetry = { git = "https://github.com/davidB/axum-tracing-opentelemetry", features = [
+#   "jaeger",
+#   "otlp",
+# ] }
 clap = { version = "4.0", features = ["derive", "env"] }
 http = "0.2"
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }
@@ -26,8 +26,8 @@ opentelemetry-http = { version = "0.7" }
 opentelemetry-semantic-conventions = { version = "0.10" }
 rand = "0.8"
 reqwest = { version = "0.11", features = ["json"] }
-reqwest-middleware = { version = "0.1" }
-reqwest-tracing = { version = "0.2", features = ["opentelemetry_0_17"] }
+reqwest-middleware = { version = "0.2" }
+reqwest-tracing = { version = "0.4", features = ["opentelemetry_0_18"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 tokio = { version = "1.17", features = ["full"] }

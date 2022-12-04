@@ -232,7 +232,7 @@ fn sample_log() {
 async fn call_remote_app(url: Url) -> Result<serde_json::Value, reqwest::Error> {
     // TracingMiddleware create a span on request
     let client = ClientBuilder::new(reqwest::Client::new())
-        .with(TracingMiddleware)
+        .with(TracingMiddleware::default())
         .build();
 
     let response = client.get(url).send().await.expect("to receive a response");
@@ -243,7 +243,7 @@ async fn call_remote_app(url: Url) -> Result<serde_json::Value, reqwest::Error> 
 mod tests {
     // see https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
     use super::*;
-    use assert2::{assert, check, let_assert};
+    use assert2::{assert, check};
     use assert_json_diff::assert_json_include;
     use axum::{
         body::Body,
