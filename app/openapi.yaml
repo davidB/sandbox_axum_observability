@@ -1,0 +1,19 @@
+openapi: "3.0.2"
+info:
+  title: My App
+  version: "1.0"
+servers:
+  - url: https://localhost:8080/
+paths:
+  /depth/{depth}:
+    get:
+      parameters:
+        depth:
+          name: depth
+          in: path
+          required: true
+          type: int
+          description: "number of (recursive) call to make"
+      responses:
+        "200":
+          description: OK
