@@ -2,11 +2,11 @@ apiVersion: v2
 name: kube-prometheus-stack
 description: An adapter chart for kube-prometheus-stack
 type: application
-version: "41.7.3"
-appVersion: "0.60.1"
+version: "43.2.0"
+appVersion: "0.61.1"
 sources:
   - https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
 dependencies:
   - name: "kube-prometheus-stack"
-    version: "41.7.3"
+    version: "43.2.0"
     repository: "https://prometheus-community.github.io/helm-charts"

@@ -3,4 +3,4 @@ dependencies:
   repository: https://helm.linkerd.io/stable
   version: 2.11.3
 digest: sha256:2535b5ed9357ebc5fb2d7acbe80bbeb97e093c9868bc11908dfcca0ed240af93
-generated: "2022-07-09T20:51:36.945134071+02:00"
+generated: "2022-12-29T16:57:21.396539965+01:00"

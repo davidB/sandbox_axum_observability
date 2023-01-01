@@ -2,13 +2,15 @@
 # - [Installing Linkerd with Helm | Linkerd](https://linkerd.io/2.11/tasks/install-helm/)
 # - [Using GitOps with Linkerd with Argo CD | Linkerd](https://linkerd.io/2.11/tasks/gitops/)
 # - [Automatically Rotating Webhook TLS Credentials | Linkerd](https://linkerd.io/2.11/tasks/automatically-rotating-webhook-tls-credentials/)
-# - https://artifacthub.io/packages/helm/linkerd2/linkerd2
 apiVersion: v2
 name: linkerd-viz
 description: An adapter chart for linkerd-viz (use existing grafana & prometheus)
 type: application
 version: 2.11.3
 appVersion: "2.11.3"
+sources:
+  - https://linkerd.io/2.12/tasks/install-helm/
+  - https://artifacthub.io/packages/helm/linkerd2/linkerd2
 dependencies:
   - name: "linkerd-viz"
     version: "2.11.3"
