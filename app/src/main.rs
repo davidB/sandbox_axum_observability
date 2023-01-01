@@ -3,7 +3,8 @@ use axum::http::Method;
 use axum::Extension;
 use axum::{response::IntoResponse, routing::get, Router};
 use axum_tracing_opentelemetry::{
-    find_current_trace_id, init_tracer, make_resource, opentelemetry_tracing_layer, CollectorKind,
+    find_current_trace_id, init_tracer, make_resource, opentelemetry_tracing_layer,
+    response_with_trace_layer, CollectorKind,
 };
 use clap::{Parser, ValueEnum};
 use rand::prelude::*;
@@ -101,7 +102,7 @@ fn init_tracing(log_level: String, tracing_collector_kind: CollectorKind) {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = Settings::parse();
     init_tracing(settings.log_level, settings.tracing_collector_kind.into());
-    let default_remote_url = Url::parse(&format!("http://{}:{}/", settings.host, settings.port))?;
+    let default_remote_url = Url::parse(&format!("http://{}:{}/", settings.host, settings.port))?; //Devskim: ignore DS137138
     let remote_url = settings.remote_url.unwrap_or(default_remote_url);
     let app = app(remote_url);
     // run it
@@ -121,6 +122,11 @@ fn app(remote_url: Url) -> Router {
         .route("/depth/:depth", get(simulation_depth))
         .route("/", get(simulation))
         .layer(Extension(simulation_settings))
+        // include trace context as header into the response
+        .layer(response_with_trace_layer())
+        // opentelemetry_tracing_layer setup `TraceLayer`,
+        // that is provided by tower-http so you have to add that as a dependency.
+        .layer(opentelemetry_tracing_layer())
         .layer(
             // see https://docs.rs/tower-http/latest/tower_http/cors/index.html
             // for more details
@@ -128,9 +134,7 @@ fn app(remote_url: Url) -> Router {
                 .allow_methods(vec![Method::GET, Method::POST])
                 // allow requests from any origin
                 .allow_origin(Any),
-        )
-        .layer(opentelemetry_tracing_layer())
-        // route below are not managed/monitored
+        ) // route below are not managed/monitored
         .route("/health", get(health))
 }
 
@@ -255,7 +259,7 @@ mod tests {
 
     #[tokio::test]
     async fn health() {
-        let app = app(Url::parse("http://localhost").expect("valid url"));
+        let app = app(Url::parse("http://localhost").expect("valid url")); //Devskim: ignore DS137138
 
         let response = app
             .oneshot(
@@ -276,7 +280,7 @@ mod tests {
 
     #[tokio::test]
     async fn not_found() {
-        let app = app(Url::parse("http://localhost").expect("valid url"));
+        let app = app(Url::parse("http://localhost").expect("valid url")); //Devskim: ignore DS137138
 
         let response = app
             .oneshot(
@@ -297,7 +301,7 @@ mod tests {
     async fn simulation_with_duration() {
         let listener = TcpListener::bind("127.0.0.1:0".parse::<SocketAddr>().unwrap()).unwrap();
         let addr = listener.local_addr().unwrap();
-        let server_url = format!("http://{}", addr);
+        let server_url = format!("http://{}", addr); //Devskim: ignore DS137138
         let remote_url = Url::parse(&server_url).expect("valid url");
         tokio::spawn(async move {
             axum::Server::from_tcp(listener)
