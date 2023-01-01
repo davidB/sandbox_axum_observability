@@ -72,13 +72,19 @@ fn init_tracing(log_level: String, tracing_collector_kind: CollectorKind) {
     use tracing_subscriber::layer::SubscriberExt;
 
     // std::env::set_var("RUST_LOG", "info,kube=trace");
-    std::env::set_var("RUST_LOG", std::env::var("RUST_LOG").unwrap_or(log_level));
+    std::env::set_var(
+        "RUST_LOG",
+        std::env::var("RUST_LOG")
+            .or_else(|_| std::env::var("OTEL_LOG_LEVEL"))
+            .unwrap_or(log_level),
+    );
 
-    let otel_tracer = init_tracer(
-        tracing_collector_kind,
-        make_resource(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")),
-    )
-    .expect("setup of Tracer");
+    let otel_rsrc = make_resource(
+        std::env::var("OTEL_SERVICE_NAME").unwrap_or_else(|_| env!("CARGO_PKG_NAME").to_string()),
+        env!("CARGO_PKG_VERSION"),
+    );
+
+    let otel_tracer = init_tracer(tracing_collector_kind, otel_rsrc).expect("setup of Tracer");
     let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
 
     let fmt_layer = tracing_subscriber::fmt::layer()
@@ -200,7 +206,7 @@ async fn simulation_depth(
         .clone()
         .and_then(|o| o.duration_level_max)
         .unwrap_or(2.0_f32);
-    let depth = depth.min(10).max(0);
+    let depth = depth.clamp(0, 10);
 
     sample_log();
     fake_job(duration_level_max).await;
