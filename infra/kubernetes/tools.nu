@@ -65,7 +65,7 @@ export def make_taskinput [task_name: string, pattern: string] {
 def store_taskinput [task_input] {
   if not $task_input.is_same {
     mkdir ($task_input.store_path | path dirname)
-    $task_input.current_changeid | save $task_input.store_path
+    $task_input.current_changeid | save --force --raw $task_input.store_path
   }
 }
 
@@ -99,7 +99,7 @@ export def detect_values_chart [cluster_name: string, chart_path: path] {
 export def add_chart_repo [name: string, url: string] {
   install_helm
   if (helm repo list | from ssv --aligned-columns | where $it.NAME == $name | is-empty) {
-    do -i {
+    do -s {
       helm repo add $name $url
       helm repo update $name
     } | complete
@@ -147,8 +147,9 @@ export def install_chart [cluster_name: string, chart_name: string, chart_namesp
       }
       let values = (detect_values_chart $cluster_name $chart_path | each {|$it| ["-f" $it] } | flatten)
       # print $"helm upgrade ($chart_install_name) ($chart_path) --install --cleanup-on-fail ($helm_opts) ($values)"
-      let r = (do -i {
-        helm dependency build $chart_path
+      let r = (do -s {
+        helm dependency update $chart_path
+        # helm dependency build $chart_path
         helm upgrade $chart_install_name $chart_path --install --cleanup-on-fail $helm_opts $values
       } | complete)
       if $r.exit_code == 0 {
@@ -190,7 +191,7 @@ export def download_grafana_dashboards [folder: path] {
       $content
       | str replace '${DS_PROMETHEUS}' $it.item.value.datasource --all --string
       | str replace '[30s]' '[60s]' --all --string
-      | save $"($dir)/($it.item.key).json" --raw
+      | save --force --raw $"($dir)/($it.item.key).json"
     )
     echo $url
   }
