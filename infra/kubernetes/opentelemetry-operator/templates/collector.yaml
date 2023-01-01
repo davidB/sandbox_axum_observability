@@ -13,20 +13,20 @@ spec:
       otlp:
         protocols:
           grpc:
-            endpoint: 0.0.0.0:4317
+    #        endpoint: 0.0.0.0:4317
           http:
-            endpoint: 0.0.0.0:4318
+    #        endpoint: 0.0.0.0:4318
       opencensus:
-        endpoint: 0.0.0.0:55678
+    #    endpoint: 0.0.0.0:55678
       # zipkin:
       jaeger:
         protocols:
           grpc:
-            endpoint: 0.0.0.0:14250
+    #        endpoint: 0.0.0.0:14250
           thrift_http:
-            endpoint: 0.0.0.0:14268
+    #        endpoint: 0.0.0.0:14268
           thrift_compact:
-            endpoint: 0.0.0.0:6831
+    #        endpoint: 0.0.0.0:6831
           # thrift_binary:
     processors:
     #   batch: {}

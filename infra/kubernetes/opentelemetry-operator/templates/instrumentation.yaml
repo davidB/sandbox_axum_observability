@@ -1,0 +1,16 @@
+apiVersion: opentelemetry.io/v1alpha1
+# see https://github.com/open-telemetry/opentelemetry-operator/blob/main/config/crd/bases/opentelemetry.io_instrumentations.yaml
+kind: Instrumentation
+metadata:
+  name: instrumentation
+spec:
+  exporter:
+    endpoint: http://localhost:4317
+  propagators:
+    - tracecontext
+    - baggage
+    - b3
+  sampler:
+    type: always_on
+    # type: parentbased_traceidratio
+    # argument: "0.25"
