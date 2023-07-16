@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+#
 # This dockerfile build executable from source code before create the final image
 # - use cargo-chef to cache build of dependencies into docker's layer
 # - using this dockerfile into ci, do NOT require to provide the executable

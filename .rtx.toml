@@ -1,0 +1,14 @@
+[env]
+CLUSTER_NAME = "demo-otel"
+DOCKER_BUILDKIT = "1"
+BP_RUST_TOOLCHAIN = "1.71"
+
+[tools]
+# docker (or podman + some config) should be available for some of thoses tools
+helm = '3.12'
+kubectl = '1.24'
+helmfile = '0.155'
+kind = '0.20'
+just = '1.14'
+rust = '1.71'
+buildpack = '0.29'
