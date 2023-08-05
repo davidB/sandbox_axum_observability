@@ -11,10 +11,10 @@ repositories:
     url: "https://prometheus-community.github.io/helm-charts"
   - name: "open-telemetry"
     url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
-  - name: "linkerd"
-    url: "https://helm.linkerd.io/stable"
-  - name: "pixie-operator"
-    url: "https://pixie-operator-charts.storage.googleapis.com"
+  # - name: "linkerd"
+  #   url: "https://helm.linkerd.io/stable"
+  # - name: "pixie-operator"
+  #   url: "https://pixie-operator-charts.storage.googleapis.com"
 
 releases:
   - name: "cert-manager"

@@ -2,6 +2,7 @@
 CLUSTER_NAME = "demo-otel"
 DOCKER_BUILDKIT = "1"
 BP_RUST_TOOLCHAIN = "1.71"
+# KIND_EXPERIMENTAL_PROVIDER = "podman" # to use podman and podman-docker
 
 [tools]
 # docker (or podman + some config) should be available for some of thoses tools
@@ -12,3 +13,5 @@ kind = '0.20'
 just = '1.14'
 rust = '1.71'
 buildpack = '0.29'
+k6 = '0.45'
+curl = '*'
