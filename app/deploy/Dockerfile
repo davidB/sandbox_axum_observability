@@ -9,7 +9,7 @@
 # run with `docker run -p 8080:80 -it --rm --env APP_HOST=0.0.0.0 my-app`
 # call with `curl -i http://127.0.0.1:8080/health`
 
-FROM lukemathwalker/cargo-chef:latest-rust-1.64.0 AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.71.0 AS chef
 WORKDIR /workspace
 
 FROM chef AS planner

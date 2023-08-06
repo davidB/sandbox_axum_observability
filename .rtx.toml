@@ -14,4 +14,4 @@ just = '1.14'
 rust = '1.71'
 buildpack = '0.29'
 k6 = '0.45'
-curl = '*'
+# curl = '*' # doesn't exist
