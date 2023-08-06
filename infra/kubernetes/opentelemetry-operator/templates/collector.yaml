@@ -13,21 +13,15 @@ spec:
       otlp:
         protocols:
           grpc:
-    #        endpoint: 0.0.0.0:4317
           http:
-    #        endpoint: 0.0.0.0:4318
-      opencensus:
-    #    endpoint: 0.0.0.0:55678
+      # opencensus:
       # zipkin:
-      jaeger:
-        protocols:
-          grpc:
-    #        endpoint: 0.0.0.0:14250
-          thrift_http:
-    #        endpoint: 0.0.0.0:14268
-          thrift_compact:
-    #        endpoint: 0.0.0.0:6831
-          # thrift_binary:
+      # jaeger:
+      #   protocols:
+      #     grpc:
+      #     thrift_http:
+      #     thrift_compact:
+      #     thrift_binary:
     processors:
     #   batch: {}
     #   # If set to null, will be overridden with values based on k8s resource limits
@@ -35,20 +29,47 @@ spec:
     # extensions: {}
     #   health_check: {}
     #   memory_ballast: {}
+      # transform:
+      #   metric_statements:
+      #     - context: metric
+      #       statements:
+      #       - set(attributes["namespace"], resource.attributes["k8s_namespace_name"])
+      #       - set(attributes["container"], resource.attributes["k8s.container.name"])
+      #       - set(attributes["pod"], resource.attributes["k8s.pod.name"])
+      #       - set(attributes["cluster"], resource.attributes["k8s.cluster.name"])
     exporters:
       otlp:
         endpoint: {{ $.Values.collector.config.exporters.otlp.endpoint }}
         tls:
           insecure: true
+      prometheusremotewrite:
+        endpoint: {{ $.Values.collector.config.exporters.prometheusremotewrite.endpoint }}
+        target_info:
+          enabled: true
+    connectors:
+      spanmetrics:
+        dimensions:
+          - name: http.method
+          - name: http.status_code
+          - name: http.route
+        # exemplars:
+        #   enabled: true
+        dimensions_cache_size: 1000
+        aggregation_temporality: "AGGREGATION_TEMPORALITY_CUMULATIVE"
+        metrics_flush_interval: 30s
     service:
       # extensions: [health_check, memory_ballast]
       extensions: []
       pipelines:
         traces:
-          receivers: [otlp, jaeger, opencensus]
+          receivers: [otlp]
           # processors: [memory_limiter, batch]
           processors: []
-          exporters: [otlp]
+          exporters: [otlp, spanmetrics]
+        metrics:
+          receivers: [spanmetrics]
+          exporters: [prometheusremotewrite]
+
   # ports should be infered by operator but can't see them on pod/deployment'spec/daemonset'spec
   # but ok on service
   # ports:

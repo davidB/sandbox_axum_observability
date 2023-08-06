@@ -13,6 +13,7 @@ kube-prometheus-stack:
       scrapeInterval: "30s"
       retention: 60d
       wallCompression: true
+      enableRemoteWriteReceiver: true
       ## Prometheus StorageSpec for persistent data
       ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/storage.md
       ##

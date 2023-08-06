@@ -5,8 +5,11 @@ collector:
     exporters:
       otlp:
         endpoint: tempo-distributed-distributor.tempo-distributed:4317
-
+      prometheusremotewrite:
+        endpoint: http://kube-prometheus-stack-prometheus.kube-prometheus-stack:9090/api/v1/write
 opentelemetry-operator:
   admissionWebhooks:
     certManager:
       enabled: true
+    #   create: true
+    # autoGenerateCert: true
