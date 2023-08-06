@@ -2,11 +2,8 @@ use axum::extract::{Path, Query};
 use axum::http::Method;
 use axum::Extension;
 use axum::{response::IntoResponse, routing::get, Router};
-use axum_tracing_opentelemetry::{
-    find_current_trace_id, init_tracer, make_resource, opentelemetry_tracing_layer,
-    response_with_trace_layer, CollectorKind,
-};
-use clap::{Parser, ValueEnum};
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
+use clap::Parser;
 use rand::prelude::*;
 use reqwest::Url;
 use reqwest_middleware::ClientBuilder;
@@ -17,6 +14,7 @@ use std::net::SocketAddr;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info, trace, warn};
+use tracing_opentelemetry_instrumentation_sdk::find_current_trace_id;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -34,80 +32,13 @@ pub struct Settings {
     pub log_level: String,
     #[clap(long, env("APP_REMOTE_URL"))]
     pub remote_url: Option<Url>,
-    // #[clap(long, env("APP_TRACING_COLLECTOR_URL"))]
-    // pub tracing_collector_url: Option<String>,
-    #[clap(
-        long,
-        env("APP_TRACING_COLLECTOR_KIND"),
-        default_value("otlp"),
-        value_enum
-    )]
-    pub tracing_collector_kind: MyCollectorKind,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
-pub enum MyCollectorKind {
-    Otlp,
-    Jaeger,
-    Stdout,
-    Stderr,
-    NoWrite,
-}
-
-impl From<MyCollectorKind> for CollectorKind {
-    fn from(v: MyCollectorKind) -> Self {
-        match v {
-            MyCollectorKind::Otlp => Self::Otlp,
-            MyCollectorKind::Jaeger => Self::Jaeger,
-            MyCollectorKind::Stdout => Self::Stdout,
-            MyCollectorKind::Stderr => Self::Stderr,
-            MyCollectorKind::NoWrite => Self::NoWrite,
-        }
-    }
-}
-
-fn init_tracing(log_level: String, tracing_collector_kind: CollectorKind) {
-    use tracing_subscriber::filter::EnvFilter;
-    // use tracing_subscriber::fmt::format::FmtSpan;
-    use tracing_subscriber::layer::SubscriberExt;
-
-    // std::env::set_var("RUST_LOG", "info,kube=trace");
-    std::env::set_var(
-        "RUST_LOG",
-        std::env::var("RUST_LOG")
-            .or_else(|_| std::env::var("OTEL_LOG_LEVEL"))
-            .unwrap_or(log_level),
-    );
-
-    let otel_rsrc = make_resource(
-        std::env::var("OTEL_SERVICE_NAME").unwrap_or_else(|_| env!("CARGO_PKG_NAME").to_string()),
-        env!("CARGO_PKG_VERSION"),
-    );
-
-    let otel_tracer = init_tracer(tracing_collector_kind, otel_rsrc).expect("setup of Tracer");
-    let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
-
-    let fmt_layer = tracing_subscriber::fmt::layer()
-        .json()
-        .with_timer(tracing_subscriber::fmt::time::uptime())
-        //.with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-        // .with_filter(EnvFilter::from_default_env())
-        ;
-
-    // Build a subscriber that combines the access log and stdout log
-    // layers.
-    let subscriber = tracing_subscriber::registry()
-        .with(fmt_layer)
-        // .with(access_log)
-        .with(EnvFilter::from_default_env())
-        .with(otel_layer);
-    tracing::subscriber::set_global_default(subscriber).unwrap();
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings = Settings::parse();
-    init_tracing(settings.log_level, settings.tracing_collector_kind.into());
+    init_tracing_opentelemetry::tracing_subscriber_ext::init_subscribers()?;
+
     let default_remote_url = Url::parse(&format!("http://{}:{}/", settings.host, settings.port))?; //Devskim: ignore DS137138
     let remote_url = settings.remote_url.unwrap_or(default_remote_url);
     let app = app(remote_url);
@@ -129,10 +60,8 @@ fn app(remote_url: Url) -> Router {
         .route("/", get(simulation))
         .layer(Extension(simulation_settings))
         // include trace context as header into the response
-        .layer(response_with_trace_layer())
-        // opentelemetry_tracing_layer setup `TraceLayer`,
-        // that is provided by tower-http so you have to add that as a dependency.
-        .layer(opentelemetry_tracing_layer())
+        .layer(OtelInResponseLayer::default())
+        .layer(OtelAxumLayer::default())
         .layer(
             // see https://docs.rs/tower-http/latest/tower_http/cors/index.html
             // for more details

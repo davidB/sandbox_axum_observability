@@ -5,9 +5,9 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = "1.0"
+# anyhow = "1.0"
+axum-tracing-opentelemetry = "^0.13"
 axum = "0.6"
-axum-tracing-opentelemetry = { version = "0.7", features = ["jaeger", "otlp"] }
 # axum-tracing-opentelemetry = { path = "../../axum-tracing-opentelemetry", features = [
 # axum-tracing-opentelemetry = { git = "https://github.com/davidB/axum-tracing-opentelemetry", features = [
 #   "jaeger",
@@ -15,15 +15,19 @@ axum-tracing-opentelemetry = { version = "0.7", features = ["jaeger", "otlp"] }
 # ] }
 clap = { version = "4.0", features = ["derive", "env"] }
 http = "0.2"
-opentelemetry = { version = "0.18", features = ["rt-tokio"] }
-opentelemetry-jaeger = { version = "0.17", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.11", features = [
-  "http-proto",
-  "reqwest-client",
-  "reqwest-rustls",
+init-tracing-opentelemetry = { version = "^0.13", features = [
+  "otlp",
+  "tracing_subscriber_ext",
 ] }
-opentelemetry-http = { version = "0.7" }
-opentelemetry-semantic-conventions = { version = "0.10" }
+opentelemetry = { version = "0.20", features = ["rt-tokio"] }
+# opentelemetry-http = { version = "0.9" }
+# opentelemetry-jaeger = { version = "0.19", features = ["rt-tokio"] }
+# opentelemetry-otlp = { version = "0.13", features = [
+#   "http-proto",
+#   "reqwest-client",
+#   "reqwest-rustls",
+# ] }
+# opentelemetry-semantic-conventions = { version = "0.12" }
 rand = "0.8"
 reqwest = { version = "0.11", features = ["json"] }
 reqwest-middleware = { version = "0.2" }
@@ -32,20 +36,21 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 tokio = { version = "1.17", features = ["full"] }
 tower = "0.4"
-tower-http = { version = "0.3", features = ["trace", "cors"] }
+tower-http = { version = "0.4", features = ["trace", "cors"] }
 tracing = "0.1"
-tracing-opentelemetry = "0.18"
-tracing-subscriber = { version = "0.3", default-features = false, features = [
-  "env-filter",
-  "fmt",
-  "json",
-] }
+# tracing-opentelemetry = "0.20"
+tracing-opentelemetry-instrumentation-sdk = "^0.13"
+# tracing-subscriber = { version = "0.3", default-features = false, features = [
+#   "env-filter",
+#   "fmt",
+#   "json",
+# ] }
 # url = "2.3"
-uuid = { version = "1.0", features = ["v4"] }
+# uuid = { version = "1.0", features = ["v4"] }
 
 [dev-dependencies]
-assert2 = "0.3"
 assert-json-diff = "2.0"
+assert2 = "0.3"
 hyper = { version = "0.14", features = ["full"] }
 mime = "0.3"
 
