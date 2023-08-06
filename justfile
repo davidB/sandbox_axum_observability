@@ -53,7 +53,8 @@ app_deploy:
     "app/deploy/chart"
 
 app_call_load:
-  k6 run "app/deploy/load.k6.js"
+  # Ramp VUs from 0 to 30 over 10s, stay there for 60s, then 10s down to 0.
+  k6 run  -u 0 -s 10s:30 -s 60s:30 -s 10s:0 "app/deploy/load.k6.js"
 
 app_call_sample:
   curl -i "http://localhost:8080/depth/2"

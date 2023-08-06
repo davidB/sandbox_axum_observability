@@ -48,6 +48,8 @@ spec:
           enabled: true
     connectors:
       spanmetrics:
+        histogram:
+          explicit:
         dimensions:
           - name: http.method
           - name: http.status_code
